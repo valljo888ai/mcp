@@ -4,13 +4,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { registerAll } from "../src/tools/index.js";
 import { closeDb } from "../src/lib/db.js";
 
-const rawDbPath = process.env.SLAM_DB_PATH;
-if (!rawDbPath) {
-  throw new Error(
-    "SLAM_DB_PATH environment variable is required. Set it to the absolute path of a SLAM store.db file.",
-  );
-}
-export const DB_PATH = rawDbPath;
+export const DB_PATH = process.env.SLAM_DB_PATH ?? "./e2e/fixture/store.db";
 
 export interface TestHarness {
   client: Client;
