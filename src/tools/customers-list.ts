@@ -46,8 +46,7 @@ export const customersList: ToolDef = {
     const sql = `
       SELECT
         c.id, c.email, c.first_name, c.last_name, c.phone,
-        c.orders_count, c.total_spent,
-        c.city, c.province, c.country
+        c.orders_count, c.total_spent, c.state, c.currency
       FROM customers c
       ${whereClause}
       ORDER BY c.${sortCol} ${sortDir}
