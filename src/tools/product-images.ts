@@ -21,7 +21,7 @@ export const productImages: ToolDef = {
 
     const sql = `
       SELECT pm.id, pm.product_id, p.title AS product_title, pm.alt,
-             pm.url, pm.width, pm.height, pm.position, pm.status
+             pm.media_content_type, pm.position, pm.status
       FROM product_media pm
       JOIN products p ON p.id = pm.product_id
       ${where}

@@ -28,10 +28,11 @@ export const slamHealth: ToolDef = {
 
     const sqliteRow = db.prepare("SELECT sqlite_version() AS v").get() as { v: string } | undefined;
 
-    let metaMap: Record<string, string> = {};
+    // Gadget _slam_meta has named columns (not key/value)
+    let metaRow: Record<string, string | null> = {};
     try {
-      const rows = db.prepare("SELECT key, value FROM _slam_meta").all() as { key: string; value: string }[];
-      metaMap = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+      const row = db.prepare("SELECT * FROM _slam_meta LIMIT 1").get() as Record<string, string | null> | undefined;
+      metaRow = row ?? {};
     } catch { /* non-SLAM db */ }
 
     let rowCounts: Record<string, number> | null = null;
@@ -69,8 +70,8 @@ export const slamHealth: ToolDef = {
       last_sync_at: freshness.last_sync_at,
       minutes_since_sync: freshness.minutes_since_sync,
       freshness_tier: freshness.freshness_tier,
-      schema_version: metaMap["schema_version"] ?? null,
-      store_domain: metaMap["shop_domain"] ?? metaMap["store_domain"] ?? null,
+      schema_version: metaRow["schema_version"] ?? null,
+      store_domain: metaRow["store_domain"] ?? metaRow["store_myshopify_domain"] ?? null,
       row_counts: rowCounts,
     };
 

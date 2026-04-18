@@ -5,7 +5,7 @@ import { wrapHandler, type ToolDef } from "./index.js";
 
 export const variantOptions: ToolDef = {
   name: "slam_variant_options",
-  description: "Returns product option names and values from the product_options and product_option_values tables.",
+  description: "Returns product option names and values from the product_options table (option_values stored as JSON).",
   schema: {
     product_id: z.string().describe("The product ID to fetch options for"),
   },
@@ -14,13 +14,13 @@ export const variantOptions: ToolDef = {
     const { db } = getDb();
     const freshness = getFreshness(db);
 
+    // Gadget stores option values as JSON in product_options.option_values
     const rows = db.prepare(`
-      SELECT po.id AS option_id, po.product_id, po.name AS option_name, po.position,
-             pov.id AS value_id, pov.name AS value_name
+      SELECT po.id AS option_id, po.product_id, po.name AS option_name,
+             po.position, po.option_values
       FROM product_options po
-      JOIN product_option_values pov ON pov.product_option_id = po.id
       WHERE po.product_id = ?
-      ORDER BY po.position, pov.id
+      ORDER BY po.position
     `).all(params.product_id) as Record<string, unknown>[];
 
     return {

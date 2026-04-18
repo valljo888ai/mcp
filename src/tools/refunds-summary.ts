@@ -16,7 +16,7 @@ export const refundsSummary: ToolDef = {
     const freshness = getFreshness(db);
 
     const rows = db.prepare(`
-      SELECT r.id, r.order_id, o.name AS order_name, r.note, r.created_at, r.restock_type,
+      SELECT r.id, r.order_id, o.name AS order_name, r.note, r.created_at,
              COUNT(rli.id) AS line_item_count,
              COALESCE(SUM(CAST(rli.subtotal AS REAL)), 0) AS total_refund_amount
       FROM refunds r

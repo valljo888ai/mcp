@@ -25,7 +25,8 @@ export const fulfillmentTracking: ToolDef = {
 
     const rows = db.prepare(`
       SELECT f.id, f.order_id, o.name AS order_name, f.status,
-             f.created_at, f.updated_at, f.tracking_info, f.location_id
+             f.created_at, f.updated_at, f.tracking_company, f.tracking_numbers,
+             f.tracking_urls, f.shipment_status, f.location_id
       FROM fulfillments f
       JOIN orders o ON o.id = f.order_id
       ${whereClause}

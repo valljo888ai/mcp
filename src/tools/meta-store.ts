@@ -15,14 +15,12 @@ export const metaStore: ToolDef = {
     const { db } = getDb();
     const freshness = getFreshness(db);
 
-    const rows = db
-      .prepare("SELECT key, value FROM _slam_meta")
-      .all() as { key: string; value: string }[];
-
-    const store: Record<string, string | null> = {};
-    for (const row of rows) {
-      store[row.key] = row.value;
-    }
+    // Gadget _slam_meta has named columns (not key/value)
+    let store: Record<string, string | null> = {};
+    try {
+      const row = db.prepare("SELECT * FROM _slam_meta LIMIT 1").get() as Record<string, string | null> | undefined;
+      store = row ?? {};
+    } catch { /* non-SLAM db */ }
 
     const result = {
       _meta: {
