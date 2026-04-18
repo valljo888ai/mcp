@@ -36,6 +36,35 @@ export async function createTestHarness(): Promise<TestHarness> {
   };
 }
 
+/**
+ * Like createTestHarness but skips the slam_health call.
+ * Use this to test the session gate — the server starts uninitialized,
+ * so gated tools should return session_token_required: true.
+ */
+export async function createUninitializedHarness(): Promise<TestHarness> {
+  process.env.SLAM_DB_PATH = DB_PATH;
+
+  const server = new McpServer({ name: "slam-mcp-e2e", version: "0.1.0" });
+  registerAll(server);
+
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+
+  const client = new Client({ name: "e2e-client", version: "1.0.0" });
+
+  await server.connect(serverTransport);
+  await client.connect(clientTransport);
+
+  // Intentionally NOT calling slam_health — session remains uninitialized.
+
+  return {
+    client,
+    teardown: async () => {
+      await client.close();
+      closeDb();
+    },
+  };
+}
+
 type ContentBlock = { type: string; text?: string };
 type ToolCallResult = { content: ContentBlock[] };
 

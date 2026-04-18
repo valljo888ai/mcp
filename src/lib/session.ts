@@ -3,7 +3,9 @@ import { randomUUID } from "node:crypto";
 let _sessionToken: string | null = null;
 
 export function initSession(): string {
-  _sessionToken = randomUUID();
+  if (_sessionToken === null) {
+    _sessionToken = randomUUID();
+  }
   return _sessionToken;
 }
 

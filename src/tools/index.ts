@@ -143,6 +143,28 @@ export function wrapHandler(
   };
 }
 
+/**
+ * Like wrapHandler but WITHOUT the session gate check.
+ * Used for slam_health itself, which cannot gate on its own initialization.
+ * Still applies the try/catch so unhandled errors return a structured response
+ * rather than propagating as raw MCP protocol errors.
+ */
+export function wrapHandlerNoGate(
+  handler: (params?: Record<string, unknown>) => Promise<ToolResponse>,
+): (params?: Record<string, unknown>) => Promise<ToolResponse> {
+  return async (params) => {
+    try {
+      return await handler(params);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      process.stderr.write(`[slam-mcp] Tool error: ${message}\n`);
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: message, _meta: { domain: "error", output_type: "error" } }, null, 2) }],
+      };
+    }
+  };
+}
+
 // ---------------------------------------------------------------------------
 // All tools in registration order
 // ---------------------------------------------------------------------------
@@ -237,7 +259,7 @@ export function registerAll(server: McpServer): void {
       : `[Requires slam_health] ${tool.description}`;
 
     const handler = tool.name === "slam_health"
-      ? tool.handler
+      ? wrapHandlerNoGate(tool.handler)
       : wrapHandler(tool.handler);
 
     if (Object.keys(tool.schema).length === 0) {
