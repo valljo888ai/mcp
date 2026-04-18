@@ -12,16 +12,31 @@ MCP server for SLAM Gadget — expose your Shopify SQLite database to AI tools.
 
 ---
 
-## Installation (Claude Desktop)
+## Installation
 
-Add the following to your Claude Desktop config:
+### Step 1 — Install globally (required for fast startup)
+
+```bash
+npm install -g @slam-commerce/mcp@2
+```
+
+> **Why global?** Native modules like `better-sqlite3` must compile once on your machine. Using `npx` causes a 10–30 second cold start on every session while npm reinstalls and recompiles. Global install runs that cost once.
+
+On Windows, if the install fails with a `node-gyp` error, first run:
+```bash
+npm install -g node-gyp@latest
+npm install -g @slam-commerce/mcp@2
+```
+
+### Step 2 — Configure your MCP client
+
+**Claude Desktop** — add to config:
 
 ```json
 {
   "mcpServers": {
     "slam": {
-      "command": "npx",
-      "args": ["-y", "@slam-commerce/mcp@2"],
+      "command": "slam-mcp",
       "env": {
         "SLAM_DB_PATH": "/absolute/path/to/store.db"
       }
@@ -33,6 +48,14 @@ Add the following to your Claude Desktop config:
 Config file locations:
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+**Claude Code / Cursor** — run once:
+
+```bash
+claude mcp add slam --scope user \
+  -e "SLAM_DB_PATH=/absolute/path/to/store.db" \
+  -- slam-mcp
+```
 
 ---
 

@@ -8,11 +8,11 @@ import { wrapHandler, type ToolDef, ALL_TOOLS } from "./index.js";
 export const slamHealth: ToolDef = {
   name: "slam_health",
   description:
-    "Introspect the SLAM MCP server: MCP protocol version, server version, " +
-    "SQLite version, database pathname, row counts per table, " +
-    "table schema (column names per table), " +
-    "last sync timestamp, and store metadata. Use as the first call to " +
-    "verify the connection and detect version drift.",
+    "Introspect the SLAM MCP server: protocol version, server version, " +
+    "SQLite version, database path, row counts per table, table schema " +
+    "(column names per table), last sync timestamp, and store metadata. " +
+    "Call ONCE per session at the start — use table_schema to know exact " +
+    "column names before writing any query, avoiding runtime column errors.",
   schema: {
     include_row_counts: z
       .boolean()
