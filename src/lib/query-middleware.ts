@@ -189,6 +189,26 @@ function suggestTableNames(errorMessage: string): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// Column hint helper (exported for reuse in wrapHandler)
+// ---------------------------------------------------------------------------
+
+export function buildColumnHint(
+  db: Database.Database,
+  errorMessage: string,
+): string | undefined {
+  const colMatch = errorMessage.match(/no such column:\s+(?:(\w+)\.)?(\w+)/i);
+  const tableName = colMatch?.[1];
+  if (!tableName || !/^\w+$/.test(tableName)) return undefined;
+  try {
+    const cols = db.prepare(`PRAGMA table_info("${tableName}")`).all() as { name: string | null }[];
+    const names = cols.map(c => c.name).filter((n): n is string => n !== null);
+    return names.length > 0 ? `${tableName} columns: ${names.join(", ")}` : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Pipeline entry point
 // ---------------------------------------------------------------------------
 
@@ -235,20 +255,7 @@ export function executeQuery(
       err instanceof Error ? err.message : "Unknown query error.";
     const suggestions = suggestTableNames(message);
 
-    // Pattern: "no such column: tablename.colname" or "no such column: colname"
-    let hint: string | undefined;
-    const colMatch = message.match(/no such column:\s+(?:(\w+)\.)?(\w+)/i);
-    if (colMatch) {
-      const tableName = colMatch[1]; // may be undefined
-      if (tableName) {
-        try {
-          const cols = db.prepare(`PRAGMA table_info("${tableName}")`).all() as { name: string }[];
-          if (cols.length > 0) {
-            hint = `${tableName} columns: ${cols.map(c => c.name).join(", ")}`;
-          }
-        } catch { /* ignore PRAGMA failures */ }
-      }
-    }
+    const hint = buildColumnHint(db, message);
 
     return { error: message, suggestions, ...(hint ? { hint } : {}) };
   }

@@ -10,6 +10,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { z } from "zod";
 
 import { getDb } from "../lib/db.js";
+import { buildColumnHint } from "../lib/query-middleware.js";
 
 import { slamHealth } from "./slam-health.js";
 import { metaStatus } from "./meta-status.js";
@@ -108,20 +109,10 @@ export function wrapHandler(
       process.stderr.write(`[slam-mcp] Tool error: ${message}\n`);
       let hint: string | undefined;
 
-      // Pattern: "no such column: tablename.colname" or "no such column: colname"
-      const colMatch = message.match(/no such column:\s+(?:(\w+)\.)?(\w+)/i);
-      if (colMatch) {
-        const tableName = colMatch[1]; // may be undefined
-        if (tableName) {
-          try {
-            const { db } = getDb();
-            const cols = db.prepare(`PRAGMA table_info("${tableName}")`).all() as { name: string }[];
-            if (cols.length > 0) {
-              hint = `${tableName} columns: ${cols.map(c => c.name).join(", ")}`;
-            }
-          } catch { /* db not available */ }
-        }
-      }
+      try {
+        const { db } = getDb();
+        hint = buildColumnHint(db, message);
+      } catch { /* db not available */ }
 
       return {
         content: [
