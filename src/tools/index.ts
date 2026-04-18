@@ -9,6 +9,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { z } from "zod";
 
+import { slamHealth } from "./slam-health.js";
 import { metaStatus } from "./meta-status.js";
 import { metaStore } from "./meta-store.js";
 import { metaSchema } from "./meta-schema.js";
@@ -20,6 +21,7 @@ import { productsCount } from "./products-count.js";
 import { productImages } from "./product-images.js";
 import { variantsList } from "./variants-list.js";
 import { variantsGet } from "./variants-get.js";
+import { variantsSearch } from "./variants-search.js";
 import { variantOptions } from "./variant-options.js";
 import { inventoryLevels } from "./inventory-levels.js";
 import { inventorySummary } from "./inventory-summary.js";
@@ -66,6 +68,7 @@ import { contentPages } from "./content-pages.js";
 import { giftCardsSummary } from "./gift-cards-summary.js";
 import { sellingPlansList } from "./selling-plans-list.js";
 import { storeSnapshot } from "./store-snapshot.js";
+import { runQuery } from "./run-query.js";
 
 // ---------------------------------------------------------------------------
 // ToolDef — the shape every tool file exports
@@ -122,6 +125,7 @@ export function wrapHandler(
 
 export const ALL_TOOLS: ToolDef[] = [
   // Meta
+  slamHealth,
   metaStatus,
   metaStore,
   metaSchema,
@@ -135,6 +139,7 @@ export const ALL_TOOLS: ToolDef[] = [
   // Variants
   variantsList,
   variantsGet,
+  variantsSearch,
   variantOptions,
   // Inventory
   inventoryLevels,
@@ -190,6 +195,8 @@ export const ALL_TOOLS: ToolDef[] = [
   sellingPlansList,
   // Snapshot
   storeSnapshot,
+  // Ad-hoc query
+  runQuery,
 ];
 
 // ---------------------------------------------------------------------------
@@ -220,6 +227,7 @@ export function registerAll(server: McpServer): void {
 // ---------------------------------------------------------------------------
 
 export {
+  slamHealth,
   metaStatus,
   metaStore,
   metaSchema,
@@ -231,6 +239,7 @@ export {
   productImages,
   variantsList,
   variantsGet,
+  variantsSearch,
   variantOptions,
   inventoryLevels,
   inventorySummary,
@@ -277,4 +286,5 @@ export {
   giftCardsSummary,
   sellingPlansList,
   storeSnapshot,
+  runQuery,
 };
