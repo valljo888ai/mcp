@@ -11,6 +11,7 @@ import type { z } from "zod";
 
 import { getDb } from "../lib/db.js";
 import { buildColumnHint } from "../lib/query-middleware.js";
+import { isSessionInitialized } from "../lib/session.js";
 
 import { slamHealth } from "./slam-health.js";
 import { metaStatus } from "./meta-status.js";
@@ -102,6 +103,18 @@ export function wrapHandler(
   handler: (params?: Record<string, unknown>) => Promise<ToolResponse>,
 ): (params?: Record<string, unknown>) => Promise<ToolResponse> {
   return async (params) => {
+    if (!isSessionInitialized()) {
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            error: "slam_health must be called first. Call slam_health once at the start of each session to initialize the server.",
+            session_token_required: true,
+            _meta: { domain: "error", output_type: "error" },
+          }, null, 2),
+        }],
+      };
+    }
     try {
       return await handler(params);
     } catch (err: unknown) {
@@ -219,14 +232,18 @@ export const ALL_TOOLS: ToolDef[] = [
  */
 export function registerAll(server: McpServer): void {
   for (const tool of ALL_TOOLS) {
+    const description = tool.name === "slam_health"
+      ? tool.description
+      : `[Requires slam_health] ${tool.description}`;
+
     if (Object.keys(tool.schema).length === 0) {
       // Zero-argument tool
-      server.tool(tool.name, tool.description, async () => {
+      server.tool(tool.name, description, async () => {
         return tool.handler({});
       });
     } else {
       // Tool with params
-      server.tool(tool.name, tool.description, tool.schema, async (params) => {
+      server.tool(tool.name, description, tool.schema, async (params) => {
         return tool.handler(params as Record<string, unknown>);
       });
     }

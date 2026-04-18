@@ -3,7 +3,8 @@ import { z } from "zod";
 import { getDb } from "../lib/db.js";
 import { getFreshness } from "../lib/freshness.js";
 import { MCP_PROTOCOL_VERSION, MCP_SDK_MAJOR_VERSION, SLAM_MCP_VERSION } from "../constants.js";
-import { wrapHandler, type ToolDef, ALL_TOOLS } from "./index.js";
+import { type ToolDef, ALL_TOOLS } from "./index.js";
+import { initSession } from "../lib/session.js";
 
 export const slamHealth: ToolDef = {
   name: "slam_health",
@@ -23,7 +24,8 @@ export const slamHealth: ToolDef = {
       .optional()
       .describe("Include column lists for every table. Defaults to true."),
   },
-  handler: wrapHandler(async (params) => {
+  handler: async (params) => {
+    const sessionToken = initSession();
     const includeRows = (params?.["include_row_counts"] as boolean | undefined) ?? true;
     const includeSchema = (params?.["include_schema"] as boolean | undefined) ?? true;
     const { db, path: dbPath } = getDb();
@@ -72,6 +74,7 @@ export const slamHealth: ToolDef = {
     }
 
     const result = {
+      session_token: sessionToken,
       _meta: {
         domain: "meta",
         output_type: "health",
@@ -99,5 +102,5 @@ export const slamHealth: ToolDef = {
     };
 
     return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
-  }),
+  },
 };

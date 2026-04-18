@@ -24,6 +24,9 @@ export async function createTestHarness(): Promise<TestHarness> {
   await server.connect(serverTransport);
   await client.connect(clientTransport);
 
+  // Initialize the session — every test harness calls slam_health first
+  await client.callTool({ name: "slam_health", arguments: {} });
+
   return {
     client,
     teardown: async () => {
