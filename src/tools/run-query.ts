@@ -52,6 +52,7 @@ export const runQuery: ToolDef = {
           has_more: false,
         },
         error: queryResult.error,
+        ...(queryResult.hint ? { hint: queryResult.hint } : {}),
         suggestions: queryResult.suggestions,
       };
 

@@ -77,6 +77,7 @@ export interface QueryResult {
 export interface QueryError {
   error: string;
   suggestions: string[];
+  hint?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -233,6 +234,22 @@ export function executeQuery(
     const message =
       err instanceof Error ? err.message : "Unknown query error.";
     const suggestions = suggestTableNames(message);
-    return { error: message, suggestions };
+
+    // Pattern: "no such column: tablename.colname" or "no such column: colname"
+    let hint: string | undefined;
+    const colMatch = message.match(/no such column:\s+(?:(\w+)\.)?(\w+)/i);
+    if (colMatch) {
+      const tableName = colMatch[1]; // may be undefined
+      if (tableName) {
+        try {
+          const cols = db.prepare(`PRAGMA table_info("${tableName}")`).all() as { name: string }[];
+          if (cols.length > 0) {
+            hint = `${tableName} columns: ${cols.map(c => c.name).join(", ")}`;
+          }
+        } catch { /* ignore PRAGMA failures */ }
+      }
+    }
+
+    return { error: message, suggestions, ...(hint ? { hint } : {}) };
   }
 }

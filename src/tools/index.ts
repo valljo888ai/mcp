@@ -9,6 +9,8 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { z } from "zod";
 
+import { getDb } from "../lib/db.js";
+
 import { slamHealth } from "./slam-health.js";
 import { metaStatus } from "./meta-status.js";
 import { metaStore } from "./meta-store.js";
@@ -104,14 +106,32 @@ export function wrapHandler(
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       process.stderr.write(`[slam-mcp] Tool error: ${message}\n`);
+      let hint: string | undefined;
+
+      // Pattern: "no such column: tablename.colname" or "no such column: colname"
+      const colMatch = message.match(/no such column:\s+(?:(\w+)\.)?(\w+)/i);
+      if (colMatch) {
+        const tableName = colMatch[1]; // may be undefined
+        if (tableName) {
+          try {
+            const { db } = getDb();
+            const cols = db.prepare(`PRAGMA table_info("${tableName}")`).all() as { name: string }[];
+            if (cols.length > 0) {
+              hint = `${tableName} columns: ${cols.map(c => c.name).join(", ")}`;
+            }
+          } catch { /* db not available */ }
+        }
+      }
+
       return {
         content: [
           {
             type: "text" as const,
             text: JSON.stringify({
               error: message,
+              ...(hint ? { hint } : {}),
               _meta: { domain: "error", output_type: "error" },
-            }),
+            }, null, 2),
           },
         ],
       };
