@@ -8,14 +8,14 @@ describe("inventory tools", () => {
 
   it("slam_inventory_levels includes location_name", async () => {
     const data = parseResult(await h.client.callTool({ name: "slam_inventory_levels", arguments: {} }));
-    const levels = data["levels"] as Record<string, unknown>[];
+    const levels = data["inventory_levels"] as Record<string, unknown>[];
     expect(levels.length).toBeGreaterThan(0);
     expect(levels[0]).toHaveProperty("location_name");
   });
 
   it("slam_inventory_by_location includes location_name from TEMP view", async () => {
     const data = parseResult(await h.client.callTool({ name: "slam_inventory_by_location", arguments: {} }));
-    const rows = data["locations"] as Record<string, unknown>[];
+    const rows = data["by_location"] as Record<string, unknown>[];
     expect(rows[0]).toHaveProperty("location_name");
   });
 
