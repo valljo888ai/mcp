@@ -1,0 +1,5 @@
+src/
+e2e/
+tsconfig.json
+*.test.ts
+.github/

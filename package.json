@@ -1,0 +1,38 @@
+{
+  "name": "@slam-commerce/mcp",
+  "version": "2.0.0",
+  "private": false,
+  "type": "module",
+  "description": "MCP server for SLAM Gadget Shopify SQLite databases.",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/valljo888ai/mcp" },
+  "keywords": ["shopify", "mcp", "model-context-protocol", "sqlite", "slam", "gadget"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": { "slam-mcp": "./dist/cli.js" },
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./server": { "types": "./dist/server.d.ts", "import": "./dist/server.js" }
+  },
+  "files": ["dist", "README.md", "SCHEMA.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "fixture": "node e2e/fixture/create-fixture.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1",
+    "better-sqlite3": "^11",
+    "zod": "^3.24"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7",
+    "@vitest/coverage-v8": "^3",
+    "typescript": "^5.9",
+    "vitest": "^3"
+  },
+  "publishConfig": { "access": "public" }
+}
