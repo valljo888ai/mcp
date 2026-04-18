@@ -36,7 +36,7 @@ export const inventoryByLocation: ToolDef = {
 
     const rows = db
       .prepare(
-        `SELECT location_id, item_count, total_available, total_on_hand, total_reserved, total_committed
+        `SELECT location_id, location_name, location_active, item_count, total_available
          FROM inventory_by_location
          ${whereClause}
          ORDER BY total_available DESC`,
@@ -46,18 +46,12 @@ export const inventoryByLocation: ToolDef = {
     const totals = rows.reduce<{
       item_count: number;
       total_available: number;
-      total_on_hand: number;
-      total_reserved: number;
-      total_committed: number;
     }>(
       (acc, r) => ({
         item_count: acc.item_count + (r.item_count as number),
         total_available: acc.total_available + (r.total_available as number),
-        total_on_hand: acc.total_on_hand + (r.total_on_hand as number),
-        total_reserved: acc.total_reserved + (r.total_reserved as number),
-        total_committed: acc.total_committed + (r.total_committed as number),
       }),
-      { item_count: 0, total_available: 0, total_on_hand: 0, total_reserved: 0, total_committed: 0 },
+      { item_count: 0, total_available: 0 },
     );
 
     const result = {

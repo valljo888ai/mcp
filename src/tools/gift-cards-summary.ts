@@ -15,13 +15,13 @@ export const giftCardsSummary: ToolDef = {
     const freshness = getFreshness(db);
 
     const rows = db.prepare(`
-      SELECT currency_code,
+      SELECT currency,
              COUNT(*) AS total_count,
-             SUM(CASE WHEN enabled = 1 THEN 1 ELSE 0 END) AS active_count,
+             SUM(CASE WHEN disabled_at IS NULL THEN 1 ELSE 0 END) AS active_count,
              ROUND(SUM(CAST(balance AS REAL)), 2) AS total_outstanding_balance,
              ROUND(SUM(CAST(initial_value AS REAL)), 2) AS total_issued_value
       FROM gift_cards
-      GROUP BY currency_code
+      GROUP BY currency
       ORDER BY total_outstanding_balance DESC
     `).all() as Record<string, unknown>[];
 

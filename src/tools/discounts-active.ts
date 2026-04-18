@@ -22,8 +22,7 @@ export const discountsActive: ToolDef = {
     const freshness = getFreshness(db);
 
     const rows = db.prepare(`
-      SELECT id, title, status, discount_type, value, value_type,
-             starts_at, ends_at, usage_count, applies_to_type
+      SELECT id, title, status, starts_at, ends_at, created_at, updated_at
       FROM discounts
       WHERE status = 'ACTIVE'
         AND (ends_at IS NULL OR ends_at > datetime('now'))

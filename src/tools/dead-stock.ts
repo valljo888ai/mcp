@@ -44,7 +44,7 @@ export const deadStock: ToolDef = {
     const sql = `
       SELECT
         vsh.variant_id, vsh.product_id, vsh.variant_title, vsh.sku,
-        vsh.total_available, vsh.total_on_hand,
+        vsh.total_available,
         p.title AS product_title, p.vendor, p.product_type, p.status
       FROM variant_stock_health vsh
       JOIN products p ON p.id = vsh.product_id

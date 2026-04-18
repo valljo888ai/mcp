@@ -61,8 +61,6 @@ const VIEW_DOCUMENTATION: Record<
       inventory_quantity:
         "Deprecated single-location count from variants table — prefer total_available",
       total_available: "Sum of available across all locations (INTEGER)",
-      total_on_hand: "Sum of on_hand across all locations (INTEGER)",
-      total_reserved: "Sum of reserved across all locations (INTEGER)",
     },
     usage_hint:
       "WHERE total_available = 0 for out-of-stock. WHERE total_available <= 5 for low stock. JOIN to products on product_id for product title/vendor.",
@@ -105,9 +103,6 @@ const VIEW_DOCUMENTATION: Record<
       item_count:
         "Number of distinct inventory items tracked at this location (INTEGER)",
       total_available: "Sum of available units at this location (INTEGER)",
-      total_on_hand: "Sum of on_hand units (INTEGER)",
-      total_reserved: "Sum of reserved units (INTEGER)",
-      total_committed: "Sum of committed units (INTEGER)",
     },
     usage_hint:
       "ORDER BY total_available DESC to see best-stocked location. JOIN to inventory_levels on location_id for item-level detail.",

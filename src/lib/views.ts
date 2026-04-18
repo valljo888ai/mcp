@@ -17,7 +17,7 @@ export function createViews(db: Database.Database): void {
     "GROUP BY p.id;"
   );
 
-  // 2. variant_stock_health — unchanged from V3
+  // 2. variant_stock_health — Gadget inventory_levels only has 'available' (no on_hand/reserved cols)
   db.exec(
     "CREATE TEMP VIEW IF NOT EXISTS variant_stock_health AS " +
     "SELECT " +
@@ -26,9 +26,7 @@ export function createViews(db: Database.Database): void {
     "  v.title           AS variant_title, " +
     "  v.sku, " +
     "  v.inventory_quantity, " +
-    "  COALESCE(SUM(il.available), 0) AS total_available, " +
-    "  COALESCE(SUM(il.on_hand), 0)   AS total_on_hand, " +
-    "  COALESCE(SUM(il.reserved), 0)  AS total_reserved " +
+    "  COALESCE(SUM(il.available), 0) AS total_available " +
     "FROM variants v " +
     "LEFT JOIN inventory_items ii ON ii.variant_id = v.id " +
     "LEFT JOIN inventory_levels il ON il.inventory_item_id = ii.id " +
@@ -72,7 +70,7 @@ export function createViews(db: Database.Database): void {
     "JOIN products p ON p.id = v.product_id;"
   );
 
-  // 5. inventory_by_location — adds location name via locations table
+  // 5. inventory_by_location — Gadget inventory_levels only has 'available' column
   db.exec(
     "CREATE TEMP VIEW IF NOT EXISTS inventory_by_location AS " +
     "SELECT " +
@@ -80,10 +78,7 @@ export function createViews(db: Database.Database): void {
     "  l.name                                    AS location_name, " +
     "  l.active                                  AS location_active, " +
     "  COUNT(DISTINCT il.inventory_item_id)       AS item_count, " +
-    "  COALESCE(SUM(il.available), 0)            AS total_available, " +
-    "  COALESCE(SUM(il.on_hand), 0)              AS total_on_hand, " +
-    "  COALESCE(SUM(il.reserved), 0)             AS total_reserved, " +
-    "  COALESCE(SUM(il.committed), 0)            AS total_committed " +
+    "  COALESCE(SUM(il.available), 0)            AS total_available " +
     "FROM inventory_levels il " +
     "LEFT JOIN locations l ON l.id = il.location_id " +
     "GROUP BY il.location_id;"
