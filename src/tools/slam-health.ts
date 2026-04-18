@@ -49,7 +49,8 @@ export const slamHealth: ToolDef = {
       ).all() as { name: string }[];
       for (const { name } of tables) {
         try {
-          const row = db.prepare(`SELECT COUNT(*) AS c FROM "${name}"`).get() as { c: number } | undefined;
+          const safeName = name.replace(/"/g, '""');
+          const row = db.prepare(`SELECT COUNT(*) AS c FROM "${safeName}"`).get() as { c: number } | undefined;
           rowCounts[name] = row?.c ?? 0;
         } catch { /* skip */ }
       }
@@ -59,12 +60,13 @@ export const slamHealth: ToolDef = {
     if (includeSchema) {
       tableSchema = {};
       const allTables = db.prepare(
-        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' ORDER BY name"
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' AND name NOT LIKE '\\_%' ESCAPE '\\' ORDER BY name"
       ).all() as { name: string }[];
       for (const { name } of allTables) {
         try {
-          const cols = db.prepare(`PRAGMA table_info("${name}")`).all() as { name: string }[];
-          tableSchema[name] = cols.map((c) => c.name);
+          const safeName = name.replace(/"/g, '""');
+          const cols = db.prepare(`PRAGMA table_info("${safeName}")`).all() as { name: string | null }[];
+          tableSchema[name] = cols.map((c) => c.name).filter((n): n is string => n !== null);
         } catch { /* skip */ }
       }
     }
