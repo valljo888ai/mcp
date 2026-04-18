@@ -236,16 +236,16 @@ export function registerAll(server: McpServer): void {
       ? tool.description
       : `[Requires slam_health] ${tool.description}`;
 
+    const handler = tool.name === "slam_health"
+      ? tool.handler
+      : wrapHandler(tool.handler);
+
     if (Object.keys(tool.schema).length === 0) {
       // Zero-argument tool
-      server.tool(tool.name, description, async () => {
-        return tool.handler({});
-      });
+      server.tool(tool.name, description, async () => handler({}));
     } else {
       // Tool with params
-      server.tool(tool.name, description, tool.schema, async (params) => {
-        return tool.handler(params as Record<string, unknown>);
-      });
+      server.tool(tool.name, description, tool.schema, async (params) => handler(params as Record<string, unknown>));
     }
   }
 }
