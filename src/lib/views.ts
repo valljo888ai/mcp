@@ -17,7 +17,7 @@ export function createViews(db: Database.Database): void {
     "GROUP BY p.id;"
   );
 
-  // 2. variant_stock_health — Gadget inventory_levels only has 'available' (no on_hand/reserved cols)
+  // 2. variant_stock_health — Gadget joins inventory via sku (no variant_id FK on inventory_items)
   db.exec(
     "CREATE TEMP VIEW IF NOT EXISTS variant_stock_health AS " +
     "SELECT " +
@@ -28,7 +28,7 @@ export function createViews(db: Database.Database): void {
     "  v.inventory_quantity, " +
     "  COALESCE(SUM(il.available), 0) AS total_available " +
     "FROM variants v " +
-    "LEFT JOIN inventory_items ii ON ii.variant_id = v.id " +
+    "LEFT JOIN inventory_items ii ON ii.sku = v.sku AND v.sku IS NOT NULL " +
     "LEFT JOIN inventory_levels il ON il.inventory_item_id = ii.id " +
     "GROUP BY v.id;"
   );

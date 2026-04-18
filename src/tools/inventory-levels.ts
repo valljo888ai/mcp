@@ -61,7 +61,7 @@ export const inventoryLevels: ToolDef = {
         v.product_id
       FROM inventory_levels il
       JOIN inventory_items ii ON ii.id = il.inventory_item_id
-      JOIN variants v ON v.id = ii.variant_id
+      LEFT JOIN variants v ON v.sku = ii.sku AND ii.sku IS NOT NULL
       LEFT JOIN locations l ON l.id = il.location_id
       ${whereClause}
       ORDER BY ii.sku ASC
@@ -74,7 +74,7 @@ export const inventoryLevels: ToolDef = {
       SELECT COUNT(*) AS cnt
       FROM inventory_levels il
       JOIN inventory_items ii ON ii.id = il.inventory_item_id
-      JOIN variants v ON v.id = ii.variant_id
+      LEFT JOIN variants v ON v.sku = ii.sku AND ii.sku IS NOT NULL
       ${whereClause}
     `;
     const countRow = db.prepare(countSql).get(...filterBindings) as { cnt: number } | undefined;

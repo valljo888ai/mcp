@@ -36,9 +36,9 @@ const CHECKS: CheckDef[] = [
     countSql:
       "SELECT COUNT(*) AS cnt FROM inventory_items WHERE tracked = 0",
     sampleSql:
-      `SELECT ii.id, ii.variant_id, ii.sku, ii.tracked, v.title AS variant_title
+      `SELECT ii.id, ii.sku, ii.tracked, v.title AS variant_title
        FROM inventory_items ii
-       LEFT JOIN variants v ON v.id = ii.variant_id
+       LEFT JOIN variants v ON v.sku = ii.sku AND ii.sku IS NOT NULL
        WHERE ii.tracked = 0 LIMIT ?`,
   },
 ];

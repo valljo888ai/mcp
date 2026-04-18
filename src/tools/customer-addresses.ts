@@ -25,11 +25,11 @@ export const customerAddresses: ToolDef = {
 
     const rows = db.prepare(`
       SELECT ca.id, ca.customer_id, c.email, ca.address1, ca.city,
-             ca.province, ca.country, ca.is_default
+             ca.province, ca.country, ca.country_code, ca.zip
       FROM customer_addresses ca
       JOIN customers c ON c.id = ca.customer_id
       ${where}
-      ORDER BY ca.customer_id, ca.is_default DESC
+      ORDER BY ca.customer_id, ca.id
       LIMIT ? OFFSET ?
     `).all(...bindings, params.limit, params.offset) as Record<string, unknown>[];
 
