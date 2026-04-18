@@ -11,7 +11,7 @@ const ENTITY_TABLES = [
   "variants",
   "collections",
   "orders",
-  "line_items",
+  "order_line_items",
   "customers",
   "metafields",
   "inventory_items",

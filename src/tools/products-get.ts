@@ -58,7 +58,7 @@ export const productsGet: ToolDef = {
       .prepare(
         `SELECT c.id, c.title, c.handle
          FROM collections c
-         JOIN collection_memberships cm ON cm.collection_id = c.id
+         JOIN collects cm ON cm.collection_id = c.id
          WHERE cm.product_id = ?`,
       )
       .all(params.id) as Record<string, unknown>[];

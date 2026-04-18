@@ -55,7 +55,7 @@ export const collectionsList: ToolDef = {
         CASE WHEN c.rules IS NOT NULL THEN 'smart' ELSE 'custom' END AS collection_type,
         COUNT(cm.product_id) AS product_count
       FROM collections c
-      LEFT JOIN collection_memberships cm ON cm.collection_id = c.id
+      LEFT JOIN collects cm ON cm.collection_id = c.id
       ${whereClause}
       GROUP BY c.id
       ORDER BY c.${sortCol} ${sortDir}

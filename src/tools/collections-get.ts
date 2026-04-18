@@ -59,7 +59,7 @@ export const collectionsGet: ToolDef = {
       .prepare(
         `SELECT p.id, p.title, p.handle, p.status, p.vendor, p.product_type
          FROM products p
-         JOIN collection_memberships cm ON cm.product_id = p.id
+         JOIN collects cm ON cm.product_id = p.id
          WHERE cm.collection_id = ?
          ORDER BY p.title ASC`,
       )

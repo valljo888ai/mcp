@@ -45,7 +45,7 @@ const VIEW_DOCUMENTATION: Record<
       order_count: "Number of distinct orders containing this product (INTEGER)",
       units_sold: "Total quantity sold across all orders (INTEGER)",
       total_revenue:
-        "SUM(price * quantity) cast to REAL — source prices are TEXT in line_items. Use COALESCE(CAST(total_revenue AS REAL), 0) in arithmetic.",
+        "SUM(price * quantity) cast to REAL — source prices are TEXT in order_line_items. Use COALESCE(CAST(total_revenue AS REAL), 0) in arithmetic.",
     },
     usage_hint:
       "ORDER BY total_revenue DESC for best sellers. JOIN to products on product_id for status/tags. Products with zero sales do NOT appear — left-join artifact.",
@@ -86,7 +86,7 @@ const VIEW_DOCUMENTATION: Record<
   },
   product_collection_map: {
     purpose:
-      "Many-to-many relationship between products and collections — denormalized join of collection_memberships with titles on both sides.",
+      "Many-to-many relationship between products and collections — denormalized join of collects with titles on both sides.",
     columns: {
       product_id: "Shopify GID (TEXT)",
       product_title: "Product title",
@@ -95,7 +95,7 @@ const VIEW_DOCUMENTATION: Record<
       collection_handle: "Collection URL handle",
     },
     usage_hint:
-      "WHERE collection_id = ? to list products in a collection. WHERE product_id = ? to list collections for a product. Faster than joining collection_memberships manually.",
+      "WHERE collection_id = ? to list products in a collection. WHERE product_id = ? to list collections for a product. Faster than joining collects manually.",
   },
   inventory_by_location: {
     purpose:
@@ -160,20 +160,20 @@ const QUERY_TIPS = [
   {
     label: "orders with line item detail",
     example:
-      "SELECT o.name, o.total_price, li.title, li.quantity, li.price FROM orders o JOIN line_items li ON li.order_id = o.id WHERE o.id = ?",
+      "SELECT o.name, o.total_price, li.title, li.quantity, li.price FROM orders o JOIN order_line_items li ON li.order_id = o.id WHERE o.id = ?",
   },
 ];
 
 // Logical relationships — SQLite has no declared FKs; these are the known join paths.
 const KNOWN_RELATIONSHIPS = [
   { from_table: "variants",               from_col: "product_id",        to_table: "products",        to_col: "id" },
-  { from_table: "line_items",             from_col: "order_id",          to_table: "orders",          to_col: "id" },
-  { from_table: "line_items",             from_col: "product_id",        to_table: "products",        to_col: "id" },
-  { from_table: "line_items",             from_col: "variant_id",        to_table: "variants",        to_col: "id" },
-  { from_table: "inventory_levels",       from_col: "inventory_item_id", to_table: "inventory_items", to_col: "id" },
-  { from_table: "inventory_items",        from_col: "variant_id",        to_table: "variants",        to_col: "id" },
-  { from_table: "collection_memberships", from_col: "product_id",        to_table: "products",        to_col: "id" },
-  { from_table: "collection_memberships", from_col: "collection_id",     to_table: "collections",     to_col: "id" },
+  { from_table: "order_line_items",        from_col: "order_id",          to_table: "orders",          to_col: "id" },
+  { from_table: "order_line_items",        from_col: "product_id",        to_table: "products",        to_col: "id" },
+  { from_table: "order_line_items",        from_col: "variant_id",        to_table: "variants",        to_col: "id" },
+  { from_table: "inventory_levels",        from_col: "inventory_item_id", to_table: "inventory_items", to_col: "id" },
+  { from_table: "inventory_items",         from_col: "variant_id",        to_table: "variants",        to_col: "id" },
+  { from_table: "collects",               from_col: "product_id",        to_table: "products",        to_col: "id" },
+  { from_table: "collects",               from_col: "collection_id",     to_table: "collections",     to_col: "id" },
   { from_table: "orders",                 from_col: "email",             to_table: "customers",       to_col: "email", note: "logical join — no FK declared" },
 ] as const;
 
