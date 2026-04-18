@@ -64,7 +64,7 @@ export const storeSnapshot: ToolDef = {
     const contentIssues = (
       db
         .prepare(
-          "SELECT COUNT(*) AS cnt FROM products WHERE description_html IS NULL OR TRIM(description_html) = ''",
+          "SELECT COUNT(*) AS cnt FROM products WHERE body_html IS NULL OR TRIM(body_html) = ''",
         )
         .get() as { cnt: number }
     ).cnt;
