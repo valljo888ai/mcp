@@ -1,6 +1,6 @@
 {
   "name": "@slam-commerce/mcp",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "private": false,
   "type": "module",
   "description": "MCP server for SLAM Gadget Shopify SQLite databases.",
