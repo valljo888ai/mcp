@@ -10,6 +10,7 @@ export const slamHealth: ToolDef = {
   description:
     "Introspect the SLAM MCP server: MCP protocol version, server version, " +
     "SQLite version, database pathname, row counts per table, " +
+    "table schema (column names per table), " +
     "last sync timestamp, and store metadata. Use as the first call to " +
     "verify the connection and detect version drift.",
   schema: {
@@ -17,9 +18,14 @@ export const slamHealth: ToolDef = {
       .boolean()
       .optional()
       .describe("Include per-table row counts. Defaults to true."),
+    include_schema: z
+      .boolean()
+      .optional()
+      .describe("Include column lists for every table. Defaults to true."),
   },
   handler: wrapHandler(async (params) => {
     const includeRows = (params?.["include_row_counts"] as boolean | undefined) ?? true;
+    const includeSchema = (params?.["include_schema"] as boolean | undefined) ?? true;
     const { db, path: dbPath } = getDb();
     const freshness = getFreshness(db);
 
@@ -49,6 +55,20 @@ export const slamHealth: ToolDef = {
       }
     }
 
+    let tableSchema: Record<string, string[]> | null = null;
+    if (includeSchema) {
+      tableSchema = {};
+      const allTables = db.prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' ORDER BY name"
+      ).all() as { name: string }[];
+      for (const { name } of allTables) {
+        try {
+          const cols = db.prepare(`PRAGMA table_info("${name}")`).all() as { name: string }[];
+          tableSchema[name] = cols.map((c) => c.name);
+        } catch { /* skip */ }
+      }
+    }
+
     const result = {
       _meta: {
         domain: "meta",
@@ -73,6 +93,7 @@ export const slamHealth: ToolDef = {
       schema_version: metaRow["schema_version"] ?? null,
       store_domain: metaRow["store_domain"] ?? metaRow["store_myshopify_domain"] ?? null,
       row_counts: rowCounts,
+      table_schema: tableSchema,
     };
 
     return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
