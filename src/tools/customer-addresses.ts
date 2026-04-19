@@ -24,8 +24,8 @@ export const customerAddresses: ToolDef = {
     const bindings: unknown[] = params.customer_id ? [params.customer_id] : [];
 
     const rows = db.prepare(`
-      SELECT ca.id, ca.customer_id, c.email, ca.address1, ca.city,
-             ca.province, ca.country, ca.country_code, ca.zip
+      SELECT ca.id, ca.customer_id, c.email, ca.address1, ca.address2, ca.city,
+             ca.province, ca.country, ca.country_code, ca.zip, ca.phone
       FROM customer_addresses ca
       JOIN customers c ON c.id = ca.customer_id
       ${where}
@@ -33,7 +33,7 @@ export const customerAddresses: ToolDef = {
       LIMIT ? OFFSET ?
     `).all(...bindings, params.limit, params.offset) as Record<string, unknown>[];
 
-    const countRow = db.prepare(`SELECT COUNT(*) AS cnt FROM customer_addresses ca ${where}`).get(...bindings) as { cnt: number } | undefined;
+    const countRow = db.prepare(`SELECT COUNT(*) AS cnt FROM customer_addresses ca JOIN customers c ON c.id = ca.customer_id ${where}`).get(...bindings) as { cnt: number } | undefined;
 
     return {
       content: [{
@@ -48,6 +48,7 @@ export const customerAddresses: ToolDef = {
             returned: rows.length,
             offset: params.offset,
             has_more: params.offset + rows.length < (countRow?.cnt ?? 0),
+            total_count: countRow?.cnt ?? 0,
           },
           addresses: rows,
         }, null, 2),

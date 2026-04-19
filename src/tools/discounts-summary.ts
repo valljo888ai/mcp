@@ -18,7 +18,7 @@ export const discountsSummary: ToolDef = {
     const rows = db.prepare(`
       SELECT code, type AS discount_type,
              COUNT(*) AS usage_count,
-             SUM(CAST(amount AS REAL)) AS total_discount_amount
+             COALESCE(SUM(CAST(amount AS REAL)), 0) AS total_discount_amount
       FROM order_discount_codes
       GROUP BY code
       ORDER BY usage_count DESC
@@ -40,8 +40,12 @@ export const discountsSummary: ToolDef = {
             returned: rows.length,
             offset: params.offset,
             has_more: params.offset + rows.length < (countRow?.cnt ?? 0),
+            total_count: countRow?.cnt ?? 0,
           },
-          discounts: rows,
+          discounts: rows.map((r) => ({
+            ...r,
+            total_discount_amount: Number(r["total_discount_amount"]).toFixed(2),
+          })),
         }, null, 2),
       }],
     };
