@@ -44,6 +44,7 @@ export interface ChecksResponse {
     freshness_tier: FreshnessInfo["freshness_tier"];
     total_checks: number;
     checks_with_results: number;
+    returned: number;
   };
 }
 
@@ -116,6 +117,7 @@ export function runChecks(
       freshness_tier: freshness.freshness_tier,
       total_checks: results.length,
       checks_with_results: results.filter((r) => r.count > 0).length,
+      returned: results.reduce((s, r) => s + r.count, 0),
     },
   };
 }

@@ -26,6 +26,10 @@ export function getFreshness(db: Database.Database): FreshnessInfo {
 
     const minutes = Math.floor((Date.now() - new Date(row.value).getTime()) / 60_000);
 
+    if (isNaN(minutes)) {
+      return { last_sync_at: row.value, minutes_since_sync: null, freshness_tier: "unknown" };
+    }
+
     const freshness_tier: FreshnessTier =
       minutes < 15   ? "fresh"      :
       minutes < 60   ? "stale"      :

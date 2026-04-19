@@ -141,7 +141,7 @@ function injectPagination(
   const upper = sql.toUpperCase().trim();
 
   // Don't double-paginate if user already specified LIMIT
-  if (upper.includes("LIMIT")) return sql;
+  if (/\bLIMIT\b/.test(upper)) return sql;
 
   // Don't paginate PRAGMAs
   if (upper.startsWith("PRAGMA")) return sql;
