@@ -49,8 +49,12 @@ export const draftOrdersList: ToolDef = {
             returned: rows.length,
             offset: params.offset,
             has_more: params.offset + rows.length < (countRow?.cnt ?? 0),
+            total_count: countRow?.cnt ?? 0,
           },
-          draft_orders: rows,
+          draft_orders: rows.map((r) => ({
+            ...r,
+            total_price: r["total_price"] != null ? Number(r["total_price"]).toFixed(2) : null,
+          })),
         }, null, 2),
       }],
     };

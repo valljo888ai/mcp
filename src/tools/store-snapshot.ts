@@ -38,52 +38,44 @@ export const storeSnapshot: ToolDef = {
     };
 
     // Inventory (use variant_stock_health view — confirmed in views.ts)
-    const totalSkus = (
-      db.prepare("SELECT COUNT(*) AS cnt FROM inventory_items").get() as {
-        cnt: number;
-      }
-    ).cnt;
+    const totalSkusRow = db.prepare("SELECT COUNT(*) AS cnt FROM inventory_items").get() as { cnt: number } | undefined;
+    const totalSkus = totalSkusRow?.cnt ?? 0;
 
-    const outOfStock = (
-      db
-        .prepare(
-          "SELECT COUNT(*) AS cnt FROM variant_stock_health WHERE total_available = 0",
-        )
-        .get() as { cnt: number }
-    ).cnt;
+    const outOfStockRow = db
+      .prepare(
+        "SELECT COUNT(*) AS cnt FROM variant_stock_health WHERE total_available = 0",
+      )
+      .get() as { cnt: number } | undefined;
+    const outOfStock = outOfStockRow?.cnt ?? 0;
 
-    const lowStock = (
-      db
-        .prepare(
-          "SELECT COUNT(*) AS cnt FROM variant_stock_health WHERE total_available > 0 AND total_available <= 5",
-        )
-        .get() as { cnt: number }
-    ).cnt;
+    const lowStockRow = db
+      .prepare(
+        "SELECT COUNT(*) AS cnt FROM variant_stock_health WHERE total_available > 0 AND total_available <= 5",
+      )
+      .get() as { cnt: number } | undefined;
+    const lowStock = lowStockRow?.cnt ?? 0;
 
     // Conditions issue counts (direct COUNTs — faster than runChecks())
-    const contentIssues = (
-      db
-        .prepare(
-          "SELECT COUNT(*) AS cnt FROM products WHERE body_html IS NULL OR TRIM(body_html) = ''",
-        )
-        .get() as { cnt: number }
-    ).cnt;
+    const contentIssuesRow = db
+      .prepare(
+        "SELECT COUNT(*) AS cnt FROM products WHERE body_html IS NULL OR TRIM(body_html) = ''",
+      )
+      .get() as { cnt: number } | undefined;
+    const contentIssues = contentIssuesRow?.cnt ?? 0;
 
-    const identifierIssues = (
-      db
-        .prepare(
-          "SELECT COUNT(*) AS cnt FROM variants WHERE sku IS NULL OR sku = ''",
-        )
-        .get() as { cnt: number }
-    ).cnt;
+    const identifierIssuesRow = db
+      .prepare(
+        "SELECT COUNT(*) AS cnt FROM variants WHERE sku IS NULL OR TRIM(sku) = ''",
+      )
+      .get() as { cnt: number } | undefined;
+    const identifierIssues = identifierIssuesRow?.cnt ?? 0;
 
-    const pricingExceptions = (
-      db
-        .prepare(
-          "SELECT COUNT(*) AS cnt FROM variants WHERE compare_at_price IS NOT NULL AND CAST(compare_at_price AS REAL) < CAST(price AS REAL)",
-        )
-        .get() as { cnt: number }
-    ).cnt;
+    const pricingExceptionsRow = db
+      .prepare(
+        "SELECT COUNT(*) AS cnt FROM variants WHERE compare_at_price IS NOT NULL AND CAST(compare_at_price AS REAL) < CAST(price AS REAL)",
+      )
+      .get() as { cnt: number } | undefined;
+    const pricingExceptions = pricingExceptionsRow?.cnt ?? 0;
 
     const result = {
       _meta: {
@@ -92,6 +84,7 @@ export const storeSnapshot: ToolDef = {
         last_sync_at: freshness.last_sync_at,
         minutes_since_sync: freshness.minutes_since_sync,
         freshness_tier: freshness.freshness_tier,
+        returned: 1,
       },
       snapshot: {
         sales: {
