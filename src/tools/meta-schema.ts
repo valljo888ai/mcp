@@ -36,19 +36,19 @@ const VIEW_DOCUMENTATION: Record<
 > = {
   product_sales: {
     purpose:
-      "Products joined with order line_items — aggregated sales metrics per product. Only products with at least one order appear.",
+      "ALL products appear; zero-sale products have NULL units_sold and NULL total_revenue.",
     columns: {
       product_id: "Shopify GID (TEXT) — matches products.id",
       product_title: "Product title at time of sync",
       vendor: "Product vendor — use for vendor-level grouping",
       product_type: "Product type tag",
       order_count: "Number of distinct orders containing this product (INTEGER)",
-      units_sold: "Total quantity sold across all orders (INTEGER)",
+      units_sold: "Total quantity sold across all orders (INTEGER) — NULL for zero-sale products — use COALESCE(units_sold, 0)",
       total_revenue:
-        "SUM(price * quantity) cast to REAL — source prices are TEXT in order_line_items. Use COALESCE(CAST(total_revenue AS REAL), 0) in arithmetic.",
+        "SUM(price * quantity) cast to REAL — NULL for zero-sale products. Use COALESCE(CAST(total_revenue AS REAL), 0) in arithmetic.",
     },
     usage_hint:
-      "ORDER BY total_revenue DESC for best sellers. JOIN to products on product_id for status/tags. Products with zero sales do NOT appear — left-join artifact.",
+      "ORDER BY total_revenue DESC for best sellers. JOIN to products on product_id for status/tags. Use COALESCE(units_sold, 0) and COALESCE(total_revenue, 0) to handle zero-sale products.",
   },
   variant_stock_health: {
     purpose:
@@ -100,12 +100,14 @@ const VIEW_DOCUMENTATION: Record<
       "Inventory levels aggregated by location. Answers which warehouse has what stock.",
     columns: {
       location_id: "Shopify location GID (TEXT)",
+      location_name: "Human-readable location name from the locations table (TEXT, nullable if location not in locations table)",
+      location_active: "Whether the location is active (BOOLEAN/INTEGER from locations.active, nullable)",
       item_count:
         "Number of distinct inventory items tracked at this location (INTEGER)",
       total_available: "Sum of available units at this location (INTEGER)",
     },
     usage_hint:
-      "ORDER BY total_available DESC to see best-stocked location. JOIN to inventory_levels on location_id for item-level detail.",
+      "ORDER BY total_available DESC to see best-stocked location. JOIN to inventory_levels on location_id for item-level detail. Use WHERE location_active = 1 to filter to active locations only.",
   },
 };
 
@@ -166,7 +168,7 @@ const KNOWN_RELATIONSHIPS = [
   { from_table: "order_line_items",        from_col: "product_id",        to_table: "products",        to_col: "id" },
   { from_table: "order_line_items",        from_col: "variant_id",        to_table: "variants",        to_col: "id" },
   { from_table: "inventory_levels",        from_col: "inventory_item_id", to_table: "inventory_items", to_col: "id" },
-  { from_table: "inventory_items",         from_col: "variant_id",        to_table: "variants",        to_col: "id" },
+  { from_table: "inventory_items", from_col: "sku", to_table: "variants", to_col: "sku", note: "Gadget schema — join via SKU, not variant_id (inventory_items has no variant_id column)" },
   { from_table: "collects",               from_col: "product_id",        to_table: "products",        to_col: "id" },
   { from_table: "collects",               from_col: "collection_id",     to_table: "collections",     to_col: "id" },
   { from_table: "orders",                 from_col: "email",             to_table: "customers",       to_col: "email", note: "logical join — no FK declared" },

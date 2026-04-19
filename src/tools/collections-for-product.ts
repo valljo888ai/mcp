@@ -43,6 +43,7 @@ export const collectionsForProduct: ToolDef = {
         minutes_since_sync: freshness.minutes_since_sync,
         freshness_tier: freshness.freshness_tier,
         returned: collections.length,
+        total_count: collections.length,
         offset: 0,
         has_more: false,
       },

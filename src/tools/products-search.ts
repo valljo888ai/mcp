@@ -72,6 +72,7 @@ export const productsSearch: ToolDef = {
         returned: rows.length,
         offset: params.offset,
         has_more: params.offset + rows.length < total,
+        total_count: total,
       },
       products: rows,
     };
