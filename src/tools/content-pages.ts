@@ -34,6 +34,16 @@ export const contentPages: ToolDef = {
 
     const rows = db.prepare(sql).all(params.limit, params.offset) as Record<string, unknown>[];
 
+    let countSql: string;
+    if (params.content_type === "page") {
+      countSql = "SELECT COUNT(*) AS cnt FROM pages";
+    } else if (params.content_type === "article") {
+      countSql = "SELECT COUNT(*) AS cnt FROM articles";
+    } else {
+      countSql = "SELECT (SELECT COUNT(*) FROM pages) + (SELECT COUNT(*) FROM articles) AS cnt";
+    }
+    const countRow = db.prepare(countSql).get() as { cnt: number } | undefined;
+
     return {
       content: [{
         type: "text" as const,
@@ -46,6 +56,8 @@ export const contentPages: ToolDef = {
             freshness_tier: freshness.freshness_tier,
             returned: rows.length,
             offset: params.offset,
+            has_more: params.offset + rows.length < (countRow?.cnt ?? 0),
+            total_count: countRow?.cnt ?? 0,
           },
           content: rows,
         }, null, 2),
