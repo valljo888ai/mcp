@@ -99,6 +99,9 @@ export const productsBoughtTogether: ToolDef = {
       minutes_since_sync: freshness.minutes_since_sync,
       freshness_tier: freshness.freshness_tier,
       returned: rows.length,
+      total_count: rows.length,
+      has_more: false,
+      offset: 0,
       min_co_orders: params.min_co_orders,
     };
 

@@ -51,28 +51,28 @@ const TOOLS: ToolEntry[] = [
   // --- Products -------------------------------------------------------------
   ["slam_products_list",   { limit: 25, offset: 0 }, { paginated: true }],
   ["slam_products_search", { query: "test", limit: 25, offset: 0 }, { paginated: true }],
-  ["slam_products_get",    { product_id: FIX.product_id }, { paginated: false }],
+  ["slam_products_get",    { id: FIX.product_id }, { paginated: false }],
   ["slam_products_count",  {}, { paginated: false }],
   ["slam_products_top",    { limit: 10, offset: 0 }, { paginated: true }],
   ["slam_products_bought_together", { min_co_orders: 1, limit: 10 }, { paginated: true }],
 
   // --- Variants -------------------------------------------------------------
   ["slam_variants_list",   { limit: 25, offset: 0 }, { paginated: true }],
-  ["slam_variants_search", { query: "test", limit: 25, offset: 0 }, { paginated: true }],
-  ["slam_variants_get",    { variant_id: FIX.variant_id }, { paginated: false }],
+  ["slam_variants_search", { sku: "test-sku", limit: 25, offset: 0 }, { paginated: true }],
+  ["slam_variants_get",    { id: FIX.variant_id }, { paginated: false }],
   ["slam_variant_options", { product_id: FIX.product_id }, { paginated: false }],
   ["slam_product_images",  { limit: 25, offset: 0 }, { paginated: true }],
 
   // --- Collections ----------------------------------------------------------
   ["slam_collections_list",        { limit: 25, offset: 0 }, { paginated: true }],
-  ["slam_collections_get",         { collection_id: FIX.collection_id }, { paginated: false }],
+  ["slam_collections_get",         { id: FIX.collection_id }, { paginated: false }],
   ["slam_collections_for_product", { product_id: FIX.product_id }, { paginated: false }],
   ["slam_products_for_collection", { collection_id: FIX.collection_id, limit: 25, offset: 0 }, { paginated: true }],
 
   // --- Customers ------------------------------------------------------------
   ["slam_customers_list",    { limit: 25, offset: 0 }, { paginated: true }],
   ["slam_customers_search",  { query: "test", limit: 25, offset: 0 }, { paginated: true }],
-  ["slam_customers_get",     { customer_id: FIX.customer_id }, { paginated: false }],
+  ["slam_customers_get",     { id: FIX.customer_id }, { paginated: false }],
   ["slam_customers_top",     { limit: 10, offset: 0 }, { paginated: true }],
   ["slam_customers_by_tag",  { limit: 50, offset: 0 }, { paginated: true }],
   ["slam_customer_addresses",{ limit: 25, offset: 0 }, { paginated: true }],
@@ -80,7 +80,7 @@ const TOOLS: ToolEntry[] = [
   // --- Orders ---------------------------------------------------------------
   ["slam_orders_list",            { limit: 25, offset: 0 }, { paginated: true }],
   ["slam_orders_search",          { query: "test", limit: 25, offset: 0 }, { paginated: true }],
-  ["slam_orders_get",             { order_id: FIX.order_id }, { paginated: false }],
+  ["slam_orders_get",             { id: FIX.order_id }, { paginated: false }],
   ["slam_order_line_items_list",  { order_id: FIX.order_id, limit: 25, offset: 0 }, { paginated: true }],
   ["slam_draft_orders_list",      { limit: 25, offset: 0 }, { paginated: true }],
   ["slam_sales_summary",          {}, { paginated: false }],
@@ -111,7 +111,7 @@ const TOOLS: ToolEntry[] = [
   // --- Selling plans / B2B / gift cards -------------------------------------
   ["slam_selling_plans_list", { limit: 25, offset: 0 }, { paginated: true }],
   ["slam_b2b_companies_list", { limit: 25, offset: 0 }, { paginated: true }],
-  ["slam_gift_cards_summary", { limit: 25, offset: 0 }, { paginated: true }],
+  ["slam_gift_cards_summary", {}, { paginated: false }],
 
   // --- Content --------------------------------------------------------------
   ["slam_content_pages",  { limit: 25, offset: 0 }, { paginated: true }],

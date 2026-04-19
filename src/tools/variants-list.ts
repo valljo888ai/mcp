@@ -60,7 +60,7 @@ export const variantsList: ToolDef = {
     const sql = `
       SELECT
         v.id, v.product_id, v.title, v.sku, v.price, v.compare_at_price,
-        v.inventory_quantity, v.barcode, v.weight, v.position,
+        v.inventory_quantity, v.barcode, v.position,
         p.title AS product_title
       FROM variants v
       JOIN products p ON p.id = v.product_id
