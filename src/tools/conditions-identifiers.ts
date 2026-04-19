@@ -35,7 +35,7 @@ const CHECKS: CheckDef[] = [
     countSql:
       `SELECT COUNT(*) AS cnt FROM (
          SELECT title FROM products GROUP BY title HAVING COUNT(*) > 1
-       )`,
+       ) AS dupes`,
     sampleSql:
       `SELECT p.id, p.title, p.handle, p.status,
               (SELECT COUNT(*) FROM products p2 WHERE p2.title = p.title) AS duplicate_count
