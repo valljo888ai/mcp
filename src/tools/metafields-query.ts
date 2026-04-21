@@ -19,6 +19,14 @@ const OWNER_TYPES = [
   "COLLECTION",
 ] as const;
 
+const STORED_OWNER_TYPE: Record<string, string> = {
+  PRODUCT: "product",
+  PRODUCTVARIANT: "variant",
+  CUSTOMER: "customer",
+  ORDER: "order",
+  COLLECTION: "collection",
+};
+
 const schema = {
   owner_type: z
     .enum(OWNER_TYPES)
@@ -77,7 +85,7 @@ export const metafieldsQuery: ToolDef = {
 
     if (params.owner_type) {
       where.push("mf.owner_type = ?");
-      bindings.push(params.owner_type);
+      bindings.push(STORED_OWNER_TYPE[params.owner_type] ?? params.owner_type.toLowerCase());
     }
     if (params.namespace) {
       where.push("mf.namespace = ?");
@@ -102,15 +110,15 @@ export const metafieldsQuery: ToolDef = {
       SELECT
         mf.id, mf.owner_id, mf.owner_type, mf.namespace, mf.key, mf.value, mf.type,
         CASE
-          WHEN mf.owner_type = 'PRODUCT'        THEN p.title
-          WHEN mf.owner_type = 'CUSTOMER'       THEN c.email
-          WHEN mf.owner_type = 'PRODUCTVARIANT' THEN v.title
+          WHEN mf.owner_type = 'product'  THEN p.title
+          WHEN mf.owner_type = 'customer' THEN c.email
+          WHEN mf.owner_type = 'variant'  THEN v.title
           ELSE NULL
         END AS owner_label
       FROM metafields mf
-      LEFT JOIN products  p ON mf.owner_type = 'PRODUCT'        AND p.id = mf.owner_id
-      LEFT JOIN customers c ON mf.owner_type = 'CUSTOMER'       AND c.id = mf.owner_id
-      LEFT JOIN variants  v ON mf.owner_type = 'PRODUCTVARIANT' AND v.id = mf.owner_id
+      LEFT JOIN products  p ON mf.owner_type = 'product'  AND p.id = mf.owner_id
+      LEFT JOIN customers c ON mf.owner_type = 'customer' AND c.id = mf.owner_id
+      LEFT JOIN variants  v ON mf.owner_type = 'variant'  AND v.id = mf.owner_id
       ${whereClause}
       ORDER BY mf.owner_type, mf.namespace, mf.key
       LIMIT ? OFFSET ?
