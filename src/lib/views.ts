@@ -26,7 +26,7 @@ export function createViews(db: Database.Database): void {
     "  v.title           AS variant_title, " +
     "  v.sku, " +
     "  v.inventory_quantity, " +
-    "  COALESCE(SUM(il.available), 0) AS total_available " +
+    "  COALESCE(SUM(il.available), MAX(v.inventory_quantity), 0) AS total_available " +
     "FROM variants v " +
     "LEFT JOIN inventory_items ii ON ii.sku = v.sku AND v.sku IS NOT NULL " +
     "LEFT JOIN inventory_levels il ON il.inventory_item_id = ii.id " +
