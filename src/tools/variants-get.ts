@@ -56,23 +56,6 @@ export const variantsGet: ToolDef = {
       };
     }
 
-    // Get inventory items and levels
-    const inventoryItems = db
-      .prepare("SELECT * FROM inventory_items WHERE variant_id = ?")
-      .all(params.id) as Record<string, unknown>[];
-
-    const inventoryItemIds = inventoryItems.map((ii) => ii["id"] as string);
-
-    let inventoryLevels: Record<string, unknown>[] = [];
-    if (inventoryItemIds.length > 0) {
-      const placeholders = inventoryItemIds.map(() => "?").join(", ");
-      inventoryLevels = db
-        .prepare(
-          `SELECT * FROM inventory_levels WHERE inventory_item_id IN (${placeholders})`,
-        )
-        .all(...inventoryItemIds) as Record<string, unknown>[];
-    }
-
     const result = {
       _meta: {
         domain: "variants",
@@ -84,11 +67,7 @@ export const variantsGet: ToolDef = {
         offset: 0,
         has_more: false,
       },
-      variant: {
-        ...variant,
-        inventory_items: inventoryItems,
-        inventory_levels: inventoryLevels,
-      },
+      variant,
     };
 
     return {

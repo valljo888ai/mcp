@@ -4,10 +4,10 @@ import { GADGET_SCHEMA_VERSION } from "../constants.js";
 export function assertSchemaVersion(db: Database.Database): void {
   try {
     const row = db
-      .prepare("SELECT value FROM _slam_meta WHERE key = ?")
-      .get("schema_version") as { value: string } | undefined;
+      .prepare("SELECT schema_version FROM _slam_meta LIMIT 1")
+      .get() as { schema_version: string } | undefined;
 
-    const actual = row?.value ?? "unknown";
+    const actual = row?.schema_version ?? "unknown";
     if (actual !== GADGET_SCHEMA_VERSION) {
       process.stderr.write(
         `[slam-mcp] WARNING: Expected Gadget schema version ${GADGET_SCHEMA_VERSION}, ` +

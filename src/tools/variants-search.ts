@@ -51,7 +51,14 @@ export const variantsSearch: ToolDef = {
             type: "text" as const,
             text: JSON.stringify({
               error: "Provide at least one of: sku, barcode",
-              _meta: { domain: "error" },
+              _meta: {
+                domain: "variants",
+                output_type: "search",
+                returned: 0,
+                total_count: 0,
+                offset: params.offset,
+                has_more: false,
+              },
             }),
           },
         ],

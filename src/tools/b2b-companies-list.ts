@@ -46,6 +46,7 @@ export const b2bCompaniesList: ToolDef = {
             returned: rows.length,
             offset: params.offset,
             has_more: params.offset + rows.length < (countRow?.cnt ?? 0),
+            total_count: countRow?.cnt ?? 0,
           },
           companies: rows,
         }, null, 2),

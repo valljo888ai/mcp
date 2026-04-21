@@ -23,6 +23,10 @@ export const customersByTag: ToolDef = {
       LIMIT ? OFFSET ?
     `).all(params.limit, params.offset) as Record<string, unknown>[];
 
+    const countRow = db.prepare(
+      "SELECT COUNT(DISTINCT tag) AS cnt FROM customer_tags"
+    ).get() as { cnt: number } | undefined;
+
     return {
       content: [{
         type: "text" as const,
@@ -35,6 +39,8 @@ export const customersByTag: ToolDef = {
             freshness_tier: freshness.freshness_tier,
             returned: rows.length,
             offset: params.offset,
+            has_more: params.offset + rows.length < (countRow?.cnt ?? 0),
+            total_count: countRow?.cnt ?? 0,
           },
           tags: rows,
         }, null, 2),

@@ -55,6 +55,10 @@ export const productsBoughtTogether: ToolDef = {
       ? "AND li1.product_id = ?"
       : "";
 
+    const pairDedup = params.product_id
+      ? "AND li1.product_id != li2.product_id"
+      : "AND li1.product_id < li2.product_id";
+
     const sql = `
       SELECT
         li1.product_id                                   AS product_a_id,
@@ -65,7 +69,7 @@ export const productsBoughtTogether: ToolDef = {
       FROM order_line_items li1
       JOIN order_line_items li2
         ON li1.order_id = li2.order_id
-        AND li1.product_id < li2.product_id
+        ${pairDedup}
       JOIN products p1 ON p1.id = li1.product_id
       JOIN products p2 ON p2.id = li2.product_id
       WHERE li1.product_id IS NOT NULL
@@ -89,12 +93,15 @@ export const productsBoughtTogether: ToolDef = {
       .all(...bindValues) as Record<string, unknown>[];
 
     const meta: Record<string, unknown> = {
-      domain: "orders",
+      domain: "products",
       output_type: "list",
       last_sync_at: freshness.last_sync_at,
       minutes_since_sync: freshness.minutes_since_sync,
       freshness_tier: freshness.freshness_tier,
       returned: rows.length,
+      total_count: rows.length,
+      has_more: false,
+      offset: 0,
       min_co_orders: params.min_co_orders,
     };
 

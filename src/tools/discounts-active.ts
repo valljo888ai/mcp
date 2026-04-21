@@ -25,13 +25,13 @@ export const discountsActive: ToolDef = {
       SELECT id, title, status, starts_at, ends_at, created_at, updated_at
       FROM discounts
       WHERE status = 'ACTIVE'
-        AND (ends_at IS NULL OR ends_at > datetime('now'))
+        AND (ends_at IS NULL OR datetime(ends_at) > datetime('now'))
       ORDER BY starts_at DESC
       LIMIT ? OFFSET ?
     `).all(params.limit, params.offset) as Record<string, unknown>[];
 
     const countRow = db.prepare(
-      "SELECT COUNT(*) AS cnt FROM discounts WHERE status = 'ACTIVE' AND (ends_at IS NULL OR ends_at > datetime('now'))"
+      "SELECT COUNT(*) AS cnt FROM discounts WHERE status = 'ACTIVE' AND (ends_at IS NULL OR datetime(ends_at) > datetime('now'))"
     ).get() as { cnt: number } | undefined;
 
     return {
@@ -47,6 +47,7 @@ export const discountsActive: ToolDef = {
             returned: rows.length,
             offset: params.offset,
             has_more: params.offset + rows.length < (countRow?.cnt ?? 0),
+            total_count: countRow?.cnt ?? 0,
           },
           discounts: rows,
         }, null, 2),

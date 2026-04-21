@@ -106,10 +106,16 @@ export function getDb(): DbInstance {
     const currentMtime = getMtime(filePath);
     if (currentMtime !== _instance.mtime) {
       _reloadInProgress = true;
+      const prevInstance = _instance;
       try {
-        _instance.db.close();
         const db = openDatabase(filePath);
+        prevInstance.db.close();
         _instance = { db, path: filePath, mtime: currentMtime };
+      } catch (err) {
+        _instance = prevInstance;
+        process.stderr.write(
+          `[slam-mcp] Warning: hot-reload failed, keeping previous connection: ${err instanceof Error ? err.message : String(err)}\n`,
+        );
       } finally {
         _reloadInProgress = false;
       }

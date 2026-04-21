@@ -122,6 +122,7 @@ export const salesSummary: ToolDef = {
         last_sync_at: freshness.last_sync_at,
         minutes_since_sync: freshness.minutes_since_sync,
         freshness_tier: freshness.freshness_tier,
+        returned: agg.total_orders,
         money_warning:
           "Prices are stored as TEXT in SLAM and CAST to REAL for arithmetic. Revenue figures may have floating-point rounding.",
         ...(params.financial_status

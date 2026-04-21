@@ -66,8 +66,8 @@ export const inventoryOversold: ToolDef = {
       .prepare(
         "SELECT COUNT(*) AS cnt FROM variant_stock_health WHERE total_available < 0",
       )
-      .get() as { cnt: number };
-    const total = countRow.cnt;
+      .get() as { cnt: number } | undefined;
+    const total = countRow?.cnt ?? 0;
 
     const result = {
       _meta: {

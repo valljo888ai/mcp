@@ -53,8 +53,8 @@ export const salesByPeriod: ToolDef = {
     const fmt = PERIOD_FORMATS[params.period] ?? PERIOD_FORMATS.month;
     const filterBindings: unknown[] = [];
     const whereClause = params.financial_status
-      ? (filterBindings.push(params.financial_status), "WHERE financial_status = ?")
-      : "";
+      ? (filterBindings.push(params.financial_status), "WHERE created_at IS NOT NULL AND financial_status = ?")
+      : "WHERE created_at IS NOT NULL";
 
     const sql = `
       SELECT
@@ -96,8 +96,8 @@ export const salesByPeriod: ToolDef = {
       periods: rows.map((r) => ({
         period_key: r.period_key,
         order_count: r.order_count,
-        revenue: r.revenue.toFixed(2),
-        avg_order_value: r.avg_order_value.toFixed(2),
+        revenue: (r.revenue ?? 0).toFixed(2),
+        avg_order_value: (r.avg_order_value ?? 0).toFixed(2),
       })),
     };
 

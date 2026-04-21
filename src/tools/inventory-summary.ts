@@ -18,12 +18,12 @@ export const inventorySummary: ToolDef = {
     // Total SKUs tracked (distinct inventory items)
     const totalSkus = db
       .prepare("SELECT COUNT(*) AS cnt FROM inventory_items")
-      .get() as { cnt: number };
+      .get() as { cnt: number } | undefined;
 
     // Total available units across all locations
     const totalUnits = db
       .prepare("SELECT COALESCE(SUM(available), 0) AS total FROM inventory_levels")
-      .get() as { total: number };
+      .get() as { total: number } | undefined;
 
     // Units by location
     const unitsByLocation = db
@@ -40,7 +40,7 @@ export const inventorySummary: ToolDef = {
       .prepare(
         "SELECT COUNT(*) AS cnt FROM variant_stock_health WHERE total_available = 0",
       )
-      .get() as { cnt: number };
+      .get() as { cnt: number } | undefined;
 
     // Low stock: variants where total_available > 0 AND <= threshold (default 5)
     const lowStockThreshold = 5;
@@ -48,7 +48,7 @@ export const inventorySummary: ToolDef = {
       .prepare(
         "SELECT COUNT(*) AS cnt FROM variant_stock_health WHERE total_available > 0 AND total_available <= ?",
       )
-      .get(lowStockThreshold) as { cnt: number };
+      .get(lowStockThreshold) as { cnt: number } | undefined;
 
     const result = {
       _meta: {
@@ -62,11 +62,11 @@ export const inventorySummary: ToolDef = {
         has_more: false,
       },
       summary: {
-        total_skus_tracked: totalSkus.cnt,
-        total_available_units: totalUnits.total,
+        total_skus_tracked: totalSkus?.cnt ?? 0,
+        total_available_units: totalUnits?.total ?? 0,
         units_by_location: unitsByLocation,
-        out_of_stock_variants: outOfStock.cnt,
-        low_stock_variants: lowStock.cnt,
+        out_of_stock_variants: outOfStock?.cnt ?? 0,
+        low_stock_variants: lowStock?.cnt ?? 0,
         low_stock_threshold: lowStockThreshold,
       },
     };
