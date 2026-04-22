@@ -34,6 +34,8 @@ function assertConditionsShape(
   const checks = data["checks"] as Record<string, unknown>[];
   expect(checks.length).toBe(expectedCheckNames.length);
   expect(meta["total_checks"]).toBe(expectedCheckNames.length);
+  const totalCount = checks.reduce((s, c) => s + (c["count"] as number), 0);
+  expect(meta["returned"]).toBe(totalCount);
   const names = checks.map((c) => c["name"]);
   for (const name of expectedCheckNames) {
     expect(names).toContain(name);
@@ -43,7 +45,7 @@ function assertConditionsShape(
     expect(typeof check["description"]).toBe("string");
     expect(typeof check["count"]).toBe("number");
     expect(Array.isArray(check["samples"])).toBe(true);
-    expect(check["error"]).toBeUndefined();
+    expect(check).not.toHaveProperty("error");
   }
 }
 
@@ -53,13 +55,16 @@ function assertConditionsShape(
 
 describe("slam_conditions_customers", () => {
   let h: TestHarness;
-  beforeAll(async () => { h = await createTestHarness(); });
-  afterAll(async () => { await h.teardown(); });
-
-  it("returns correct shape with all 4 named checks", async () => {
-    const data = parseResult(
+  let data: Record<string, unknown>;
+  beforeAll(async () => {
+    h = await createTestHarness();
+    data = parseResult(
       await h.client.callTool({ name: "slam_conditions_customers", arguments: {} }),
     );
+  });
+  afterAll(async () => { await h.teardown(); });
+
+  it("returns correct shape with all 4 named checks", () => {
     assertConditionsShape(data, [
       "missing_email",
       "duplicate_email",
@@ -68,10 +73,7 @@ describe("slam_conditions_customers", () => {
     ]);
   });
 
-  it("zero_orders count=0 for clean fixture (cust_1 has ord_1)", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_customers", arguments: {} }),
-    );
+  it("zero_orders count=0 for clean fixture (cust_1 has ord_1)", () => {
     expect(data["checks"]).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "zero_orders", count: 0, samples: [] }),
@@ -79,10 +81,7 @@ describe("slam_conditions_customers", () => {
     );
   });
 
-  it("_meta.checks_with_results=0 for clean fixture", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_customers", arguments: {} }),
-    );
+  it("_meta.checks_with_results=0 for clean fixture", () => {
     const meta = data["_meta"] as Record<string, unknown>;
     expect(meta["checks_with_results"]).toBe(0);
   });
@@ -94,13 +93,16 @@ describe("slam_conditions_customers", () => {
 
 describe("slam_conditions_inventory", () => {
   let h: TestHarness;
-  beforeAll(async () => { h = await createTestHarness(); });
-  afterAll(async () => { await h.teardown(); });
-
-  it("returns correct shape with all 3 named checks", async () => {
-    const data = parseResult(
+  let data: Record<string, unknown>;
+  beforeAll(async () => {
+    h = await createTestHarness();
+    data = parseResult(
       await h.client.callTool({ name: "slam_conditions_inventory", arguments: {} }),
     );
+  });
+  afterAll(async () => { await h.teardown(); });
+
+  it("returns correct shape with all 3 named checks", () => {
     assertConditionsShape(data, [
       "out_of_stock",
       "negative_inventory",
@@ -108,10 +110,7 @@ describe("slam_conditions_inventory", () => {
     ]);
   });
 
-  it("out_of_stock count=0 for clean fixture (var_1 has inventory_quantity=100)", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_inventory", arguments: {} }),
-    );
+  it("out_of_stock count=0 for clean fixture (var_1 has inventory_quantity=100)", () => {
     expect(data["checks"]).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "out_of_stock", count: 0, samples: [] }),
@@ -119,10 +118,7 @@ describe("slam_conditions_inventory", () => {
     );
   });
 
-  it("untracked count=0 for clean fixture (invitem_1 has tracked=1)", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_inventory", arguments: {} }),
-    );
+  it("untracked count=0 for clean fixture (invitem_1 has tracked=1)", () => {
     expect(data["checks"]).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "untracked", count: 0, samples: [] }),
@@ -130,10 +126,7 @@ describe("slam_conditions_inventory", () => {
     );
   });
 
-  it("_meta.checks_with_results=0 for clean fixture", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_inventory", arguments: {} }),
-    );
+  it("_meta.checks_with_results=0 for clean fixture", () => {
     const meta = data["_meta"] as Record<string, unknown>;
     expect(meta["checks_with_results"]).toBe(0);
   });
@@ -145,13 +138,16 @@ describe("slam_conditions_inventory", () => {
 
 describe("slam_conditions_orders", () => {
   let h: TestHarness;
-  beforeAll(async () => { h = await createTestHarness(); });
-  afterAll(async () => { await h.teardown(); });
-
-  it("returns correct shape with all 4 named checks", async () => {
-    const data = parseResult(
+  let data: Record<string, unknown>;
+  beforeAll(async () => {
+    h = await createTestHarness();
+    data = parseResult(
       await h.client.callTool({ name: "slam_conditions_orders", arguments: {} }),
     );
+  });
+  afterAll(async () => { await h.teardown(); });
+
+  it("returns correct shape with all 4 named checks", () => {
     assertConditionsShape(data, [
       "zero_line_items",
       "missing_customer_email",
@@ -160,10 +156,7 @@ describe("slam_conditions_orders", () => {
     ]);
   });
 
-  it("zero_line_items count=0 for clean fixture (ord_1 has li_1)", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_orders", arguments: {} }),
-    );
+  it("zero_line_items count=0 for clean fixture (ord_1 has li_1)", () => {
     expect(data["checks"]).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "zero_line_items", count: 0, samples: [] }),
@@ -171,10 +164,7 @@ describe("slam_conditions_orders", () => {
     );
   });
 
-  it("zero_total_price count=0 for clean fixture (ord_1 total_price=29.99)", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_orders", arguments: {} }),
-    );
+  it("zero_total_price count=0 for clean fixture (ord_1 total_price=29.99)", () => {
     expect(data["checks"]).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "zero_total_price", count: 0, samples: [] }),
@@ -182,10 +172,7 @@ describe("slam_conditions_orders", () => {
     );
   });
 
-  it("_meta.checks_with_results=0 for clean fixture", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_orders", arguments: {} }),
-    );
+  it("_meta.checks_with_results=0 for clean fixture", () => {
     const meta = data["_meta"] as Record<string, unknown>;
     expect(meta["checks_with_results"]).toBe(0);
   });
@@ -197,13 +184,16 @@ describe("slam_conditions_orders", () => {
 
 describe("slam_conditions_pricing", () => {
   let h: TestHarness;
-  beforeAll(async () => { h = await createTestHarness(); });
-  afterAll(async () => { await h.teardown(); });
-
-  it("returns correct shape with all 3 named checks", async () => {
-    const data = parseResult(
+  let data: Record<string, unknown>;
+  beforeAll(async () => {
+    h = await createTestHarness();
+    data = parseResult(
       await h.client.callTool({ name: "slam_conditions_pricing", arguments: {} }),
     );
+  });
+  afterAll(async () => { await h.teardown(); });
+
+  it("returns correct shape with all 3 named checks", () => {
     assertConditionsShape(data, [
       "price_zero",
       "compare_at_inverted",
@@ -211,10 +201,7 @@ describe("slam_conditions_pricing", () => {
     ]);
   });
 
-  it("price_zero count=0 for clean fixture (var_1 price=29.99)", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_pricing", arguments: {} }),
-    );
+  it("price_zero count=0 for clean fixture (var_1 price=29.99)", () => {
     expect(data["checks"]).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "price_zero", count: 0, samples: [] }),
@@ -222,10 +209,7 @@ describe("slam_conditions_pricing", () => {
     );
   });
 
-  it("compare_at_inverted count=0 for clean fixture (var_1 compare_at=39.99 > price=29.99)", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_pricing", arguments: {} }),
-    );
+  it("compare_at_inverted count=0 for clean fixture (var_1 compare_at=39.99 > price=29.99)", () => {
     expect(data["checks"]).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "compare_at_inverted", count: 0, samples: [] }),
@@ -233,10 +217,7 @@ describe("slam_conditions_pricing", () => {
     );
   });
 
-  it("_meta.checks_with_results=0 for clean fixture", async () => {
-    const data = parseResult(
-      await h.client.callTool({ name: "slam_conditions_pricing", arguments: {} }),
-    );
+  it("_meta.checks_with_results=0 for clean fixture", () => {
     const meta = data["_meta"] as Record<string, unknown>;
     expect(meta["checks_with_results"]).toBe(0);
   });
