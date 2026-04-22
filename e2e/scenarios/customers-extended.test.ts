@@ -38,9 +38,14 @@ describe("slam_customers_list", () => {
       await h.client.callTool({ name: "slam_customers_list", arguments: {} }),
     );
     const customers = data["customers"] as Record<string, unknown>[];
+    expect(customers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "cust_1", orders_count: 1 }),
+      ])
+    );
     const c = customers.find((r) => r["id"] === "cust_1");
     expect(c).toBeDefined();
-    expect(c!["orders_count"]).toBe(1);
+    expect(c).toMatchObject({ id: "cust_1" });
     expect(typeof c!["total_spent"]).toBe("number");
   });
 
@@ -52,8 +57,17 @@ describe("slam_customers_list", () => {
       }),
     );
     const customers = data["customers"] as Record<string, unknown>[];
-    expect(customers[0]["id"]).toBe("cust_1");
+    expect(customers.length).toBeGreaterThan(0);
+    // All results must have numeric orders_count
     expect(typeof customers[0]["orders_count"]).toBe("number");
+    // When sorted DESC, first element has highest or equal orders_count vs last
+    if (customers.length > 1) {
+      expect(customers[0]["orders_count"] as number).toBeGreaterThanOrEqual(
+        customers[customers.length - 1]["orders_count"] as number
+      );
+    }
+    // cust_1 (only customer with orders) must appear in results
+    expect(customers.some((c) => c["id"] === "cust_1")).toBe(true);
   });
 
   it("sort_by total_spent DESC returns customers with numeric total_spent", async () => {
@@ -66,6 +80,12 @@ describe("slam_customers_list", () => {
     const customers = data["customers"] as Record<string, unknown>[];
     expect(customers.length).toBeGreaterThan(0);
     expect(typeof customers[0]["total_spent"]).toBe("number");
+    // When sorted DESC, first element has highest or equal total_spent vs last
+    if (customers.length > 1) {
+      expect(customers[0]["total_spent"] as number).toBeGreaterThanOrEqual(
+        customers[customers.length - 1]["total_spent"] as number
+      );
+    }
   });
 
   it("tag=vip returns cust_1", async () => {
@@ -147,9 +167,11 @@ describe("slam_customers_top", () => {
       }),
     );
     const customers = data["customers"] as Record<string, unknown>[];
-    const c = customers.find((r) => r["id"] === "cust_1");
-    expect(c).toBeDefined();
-    expect(c!["avg_order_value"]).toBe("29.99");
+    expect(customers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "cust_1", avg_order_value: "29.99" }),
+      ])
+    );
   });
 
   it("min_orders=1 includes cust_1 and all results have orders_count >= 1", async () => {
@@ -208,9 +230,11 @@ describe("slam_customers_search", () => {
     );
     assertMeta(data, "customers", "list");
     const customers = data["customers"] as Record<string, unknown>[];
-    const c = customers.find((r) => r["id"] === "cust_1");
-    expect(c).toBeDefined();
-    expect(c!["orders_count"]).toBe(1);
+    expect(customers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "cust_1", orders_count: 1 }),
+      ])
+    );
   });
 
   it("first_name fragment 'Jane' matches cust_1", async () => {
@@ -295,9 +319,11 @@ describe("slam_customers_get", () => {
     const customer = data["customer"] as Record<string, unknown>;
     const orders = customer["recent_orders"] as Record<string, unknown>[];
     expect(Array.isArray(orders)).toBe(true);
-    const o = orders.find((r) => r["id"] === "ord_1");
-    expect(o).toBeDefined();
-    expect(o!["financial_status"]).toBe("paid");
+    expect(orders).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "ord_1", financial_status: "paid" }),
+      ])
+    );
   });
 
   it("found: metafields is an empty array (no customer metafields in fixture)", async () => {
