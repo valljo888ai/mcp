@@ -154,3 +154,4 @@ _Append a row after every audit. Never delete or modify existing rows._
 | Date | Baseline / Branch | Summary | Verdict |
 |------|-------------------|---------|---------|
 | 2026-04-22 | inception (pre-baseline) | Checklist created. T1/T2/T3 gates defined. Initial measurement: lines=88.41%, functions=79.31%, branches=39.32%, statements=88.41%. Branches threshold set to 35 (actual−5). | — initial entry — |
+| 2026-04-22 | post-tasks (main, 80cf02b) | Added 38 new e2e tests across customers and conditions tools (57→95 total). T1: lines=89.52%≥84%, functions=79.31%≥74%, branches=42.46%≥35%, statements=89.52%≥84% — PASS. T2: 0 skips — PASS. T3: 0 new src tool files — N/A. | ✅ PASS |
