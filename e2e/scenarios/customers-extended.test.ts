@@ -43,10 +43,9 @@ describe("slam_customers_list", () => {
         expect.objectContaining({ id: "cust_1", orders_count: 1 }),
       ])
     );
-    const c = customers.find((r) => r["id"] === "cust_1");
-    expect(c).toBeDefined();
-    expect(c).toMatchObject({ id: "cust_1" });
-    expect(typeof c!["total_spent"]).toBe("number");
+    for (const c of customers) {
+      expect(typeof c["total_spent"]).toBe("number");
+    }
   });
 
   it("sort_by orders_count DESC runs without error and returns cust_1", async () => {
