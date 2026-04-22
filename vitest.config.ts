@@ -16,22 +16,22 @@ export default defineConfig({
       reporter: ["text", "lcov", "html"],
 
       // ---------------------------------------------------------------------------
-      // Conservative thresholds — calibrated 2026-04-22 (first measurement).
+      // Calibrated thresholds — updated 2026-04-22 after Task 3 (customers-extended).
       //
-      // Initial measured values: lines=88.39%, functions=79.31%, branches=39.43%, statements=88.39%
-      // Thresholds set to (actual - 5) for branches (lowest coverage area).
-      // Lines/functions/statements thresholds left conservative to allow room for growth.
+      // Initial measured values (pre-Task 3): lines=88.39%, functions=79.31%, branches=39.43%, statements=88.39%
+      // Post-Task 3 measured values (80 tests): lines=89.52%, functions=79.31%, branches=42.46%, statements=89.52%
       //
-      // CALIBRATION NOTE: After Tasks 3 and 4 add more e2e tests, run
-      // `npm run test:coverage` and check actual percentages. If any actual
-      // metric exceeds its threshold by 10+ points, raise it to (actual - 5)
-      // and update this comment with measured values and date.
+      // Calibration rule: if actual exceeds threshold by 10+ points, raise to (actual - 5).
+      // - lines: 89.52% actual, was 65% threshold (gap=24.5) → raised to 84
+      // - functions: 79.31% actual, was 45% threshold (gap=34.3) → raised to 74
+      // - branches: 42.46% actual, 35% threshold (gap=7.5) → no change (< 10 pts)
+      // - statements: 89.52% actual, was 65% threshold (gap=24.5) → raised to 84
       // ---------------------------------------------------------------------------
       thresholds: {
-        lines: 65,
-        functions: 45,
+        lines: 84,
+        functions: 74,
         branches: 35,
-        statements: 65,
+        statements: 84,
       },
     },
   },
