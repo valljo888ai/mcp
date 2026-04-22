@@ -391,7 +391,7 @@ const seed = db.transaction(() => {
 
   // metafields
   db.prepare("INSERT INTO metafields (id,owner_type,owner_id,namespace,key,value,type,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)")
-    .run("mf_1","PRODUCT","prod_1","custom","material","cotton","single_line_text_field",NOW,NOW);
+    .run("mf_1","product","prod_1","custom","material","cotton","single_line_text_field",NOW,NOW);
 });
 
 seed();

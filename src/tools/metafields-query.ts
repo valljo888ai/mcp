@@ -84,7 +84,7 @@ export const metafieldsQuery: ToolDef = {
     const bindings: unknown[] = [];
 
     if (params.owner_type) {
-      where.push("mf.owner_type = ?");
+      where.push("LOWER(mf.owner_type) = ?");
       bindings.push(STORED_OWNER_TYPE[params.owner_type] ?? params.owner_type.toLowerCase());
     }
     if (params.namespace) {
@@ -110,15 +110,15 @@ export const metafieldsQuery: ToolDef = {
       SELECT
         mf.id, mf.owner_id, mf.owner_type, mf.namespace, mf.key, mf.value, mf.type,
         CASE
-          WHEN mf.owner_type = 'product'  THEN p.title
-          WHEN mf.owner_type = 'customer' THEN c.email
-          WHEN mf.owner_type = 'variant'  THEN v.title
+          WHEN LOWER(mf.owner_type) = 'product'                      THEN p.title
+          WHEN LOWER(mf.owner_type) = 'customer'                     THEN c.email
+          WHEN LOWER(mf.owner_type) IN ('variant', 'productvariant') THEN v.title
           ELSE NULL
         END AS owner_label
       FROM metafields mf
-      LEFT JOIN products  p ON mf.owner_type = 'product'  AND p.id = mf.owner_id
-      LEFT JOIN customers c ON mf.owner_type = 'customer' AND c.id = mf.owner_id
-      LEFT JOIN variants  v ON mf.owner_type = 'variant'  AND v.id = mf.owner_id
+      LEFT JOIN products  p ON LOWER(mf.owner_type) = 'product'                      AND p.id = mf.owner_id
+      LEFT JOIN customers c ON LOWER(mf.owner_type) = 'customer'                     AND c.id = mf.owner_id
+      LEFT JOIN variants  v ON LOWER(mf.owner_type) IN ('variant', 'productvariant') AND v.id = mf.owner_id
       ${whereClause}
       ORDER BY mf.owner_type, mf.namespace, mf.key
       LIMIT ? OFFSET ?
