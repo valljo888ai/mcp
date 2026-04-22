@@ -8,7 +8,7 @@ import { getFreshness } from "../lib/freshness.js";
 import { wrapHandler, type ToolDef } from "./index.js";
 
 const schema = {
-  status: z.string().optional().describe("Filter by product status (e.g. 'ACTIVE')"),
+  status: z.string().optional().describe("Filter by product status (e.g. 'active', 'draft', 'archived') — case-insensitive"),
   vendor: z.string().optional().describe("Filter by vendor name"),
   product_type: z.string().optional().describe("Filter by product type"),
 } as const;
@@ -29,7 +29,7 @@ export const productsCount: ToolDef = {
     const bindings: unknown[] = [];
 
     if (params.status) {
-      where.push("status = ?");
+      where.push("LOWER(status) = LOWER(?)");
       bindings.push(params.status);
     }
     if (params.vendor) {

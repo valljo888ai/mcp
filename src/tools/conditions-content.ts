@@ -15,9 +15,9 @@ const CHECKS: CheckDef[] = [
     name: "description_empty",
     description: "Products where description is null or empty",
     countSql:
-      "SELECT COUNT(*) AS cnt FROM products WHERE description_html IS NULL OR TRIM(description_html) = ''",
+      "SELECT COUNT(*) AS cnt FROM products WHERE body_html IS NULL OR TRIM(body_html) = ''",
     sampleSql:
-      "SELECT id, title, handle, status FROM products WHERE description_html IS NULL OR TRIM(description_html) = '' LIMIT ?",
+      "SELECT id, title, handle, status FROM products WHERE body_html IS NULL OR TRIM(body_html) = '' LIMIT ?",
   },
   {
     name: "title_copy",

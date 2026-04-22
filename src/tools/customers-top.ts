@@ -54,31 +54,50 @@ export const customersTop: ToolDef = {
     const filterBindings: unknown[] = [];
     let whereClause = "";
     if (params.min_orders !== undefined) {
-      whereClause = "WHERE orders_count >= ?";
+      whereClause = "WHERE COALESCE(co.order_count, 0) >= ?";
       filterBindings.push(params.min_orders);
     }
 
     const sortCol = SORT_COLUMNS.includes(params.sort_by) ? params.sort_by : "total_spent";
     const sortDir = params.sort_order === "ASC" ? "ASC" : "DESC";
 
-    // avg_order_value is computed — sort on expression, not alias
+    // avg_order_value and total_spent are computed aliases — reference them directly in ORDER BY
     const orderExpr =
       sortCol === "avg_order_value"
-        ? `CASE WHEN orders_count > 0 THEN CAST(total_spent AS REAL) / orders_count ELSE 0 END ${sortDir}`
+        ? `CASE WHEN orders_count > 0 THEN total_spent / orders_count ELSE 0 END ${sortDir}`
         : sortCol === "total_spent"
-        ? `COALESCE(CAST(total_spent AS REAL), 0) ${sortDir}`
+        ? `total_spent ${sortDir}`
         : `${sortCol} ${sortDir}`;
 
+    // orders_count and total_spent computed live — synced columns are not populated
+    const cte = `
+      WITH customer_orders AS (
+        SELECT customer_id, COUNT(*) AS order_count
+        FROM orders
+        WHERE customer_id IS NOT NULL
+        GROUP BY customer_id
+      ),
+      customer_spent AS (
+        SELECT customer_id, COALESCE(SUM(CAST(total_price AS REAL)), 0) AS total_spent
+        FROM orders
+        WHERE customer_id IS NOT NULL
+        GROUP BY customer_id
+      )
+    `;
+
     const sql = `
+      ${cte}
       SELECT
-        id, email, first_name, last_name, phone,
-        orders_count,
-        COALESCE(CAST(total_spent AS REAL), 0) AS total_spent,
-        CASE WHEN orders_count > 0
-          THEN CAST(total_spent AS REAL) / orders_count
+        c.id, c.email, c.first_name, c.last_name, c.phone,
+        COALESCE(co.order_count, 0) AS orders_count,
+        COALESCE(cs.total_spent, 0) AS total_spent,
+        CASE WHEN COALESCE(co.order_count, 0) > 0
+          THEN COALESCE(cs.total_spent, 0) / COALESCE(co.order_count, 1)
           ELSE 0
         END AS avg_order_value
-      FROM customers
+      FROM customers c
+      LEFT JOIN customer_orders co ON co.customer_id = c.id
+      LEFT JOIN customer_spent cs ON cs.customer_id = c.id
       ${whereClause}
       ORDER BY ${orderExpr}
       LIMIT ? OFFSET ?
@@ -89,7 +108,7 @@ export const customersTop: ToolDef = {
       .all(...filterBindings, params.limit, params.offset) as Record<string, unknown>[];
 
     const countRow = db
-      .prepare(`SELECT COUNT(*) AS cnt FROM customers ${whereClause}`)
+      .prepare(`${cte} SELECT COUNT(*) AS cnt FROM customers c LEFT JOIN customer_orders co ON co.customer_id = c.id LEFT JOIN customer_spent cs ON cs.customer_id = c.id ${whereClause}`)
       .get(...filterBindings) as { cnt: number } | undefined;
     const total = countRow?.cnt ?? 0;
 

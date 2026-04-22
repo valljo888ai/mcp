@@ -12,7 +12,7 @@ const SORT_COLUMNS = ["title", "vendor", "product_type", "status", "created_at",
 const schema = {
   limit: z.number().int().min(1).max(100).default(25).describe("Max rows to return (1-100, default 25)"),
   offset: z.number().int().min(0).default(0).describe("Number of rows to skip"),
-  status: z.string().optional().describe("Filter by product status (e.g. 'ACTIVE', 'DRAFT', 'ARCHIVED')"),
+  status: z.string().optional().describe("Filter by product status (e.g. 'active', 'draft', 'archived') — case-insensitive"),
   vendor: z.string().optional().describe("Filter by vendor name"),
   product_type: z.string().optional().describe("Filter by product type"),
   data_quality: z.enum(["no_description", "no_tags"]).optional()
@@ -37,7 +37,7 @@ export const productsList: ToolDef = {
     const filterBindings: unknown[] = [];
 
     if (params.status) {
-      where.push("p.status = ?");
+      where.push("LOWER(p.status) = LOWER(?)");
       filterBindings.push(params.status);
     }
     if (params.vendor) {
@@ -49,7 +49,7 @@ export const productsList: ToolDef = {
       filterBindings.push(params.product_type);
     }
     if (params.data_quality === "no_description") {
-      where.push("(p.description_html IS NULL OR p.description_html = '')");
+      where.push("(p.body_html IS NULL OR p.body_html = '')");
     }
     if (params.data_quality === "no_tags") {
       where.push("NOT EXISTS (SELECT 1 FROM product_tags pt WHERE pt.product_id = p.id)");

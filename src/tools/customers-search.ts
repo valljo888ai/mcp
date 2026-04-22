@@ -41,27 +41,40 @@ export const customersSearch: ToolDef = {
 
     const q = params.query;
 
+    // orders_count and total_spent are not populated by the bulk sync — compute live
+    const cte = `
+      WITH customer_orders AS (
+        SELECT customer_id, COUNT(*) AS order_count
+        FROM orders
+        WHERE customer_id IS NOT NULL
+        GROUP BY customer_id
+      )
+    `;
+
     const rows = db
       .prepare(
-        `SELECT
-           id, email, first_name, last_name, phone,
-           orders_count, total_spent
-         FROM customers
+        `${cte}
+         SELECT
+           c.id, c.email, c.first_name, c.last_name, c.phone,
+           COALESCE(co.order_count, 0) AS orders_count,
+           COALESCE(CAST(c.total_spent AS REAL), 0) AS total_spent
+         FROM customers c
+         LEFT JOIN customer_orders co ON co.customer_id = c.id
          WHERE
-           email LIKE '%' || ? || '%'
-           OR first_name LIKE '%' || ? || '%'
-           OR last_name LIKE '%' || ? || '%'
-         ORDER BY orders_count DESC
+           c.email LIKE '%' || ? || '%'
+           OR c.first_name LIKE '%' || ? || '%'
+           OR c.last_name LIKE '%' || ? || '%'
+         ORDER BY COALESCE(co.order_count, 0) DESC
          LIMIT ? OFFSET ?`,
       )
       .all(q, q, q, params.limit, params.offset) as Record<string, unknown>[];
 
     const countRow = db
       .prepare(
-        `SELECT COUNT(*) AS cnt FROM customers
-         WHERE email LIKE '%' || ? || '%'
-           OR first_name LIKE '%' || ? || '%'
-           OR last_name LIKE '%' || ? || '%'`,
+        `SELECT COUNT(*) AS cnt FROM customers c
+         WHERE c.email LIKE '%' || ? || '%'
+           OR c.first_name LIKE '%' || ? || '%'
+           OR c.last_name LIKE '%' || ? || '%'`,
       )
       .get(q, q, q) as { cnt: number } | undefined;
     const total = countRow?.cnt ?? 0;

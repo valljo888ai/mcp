@@ -41,28 +41,40 @@ export const inventoryLevels: ToolDef = {
       filterBindings.push(params.sku);
     }
     if (params.location_id) {
-      where.push("il.location_id = ?");
+      where.push("dl.location_id = ?");
       filterBindings.push(params.location_id);
     }
 
     const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
 
+    // Deduplicate: the sync produces both a legacy row (available=NULL) and a current row
+    // (available=N) for the same (inventory_item_id, location_id). MAX(available) picks
+    // the non-null value and collapses duplicates.
+    const deduped = `
+      WITH deduped_levels AS (
+        SELECT inventory_item_id, location_id, MAX(available) AS available
+        FROM inventory_levels
+        GROUP BY inventory_item_id, location_id
+      )
+    `;
+
     const sql = `
+      ${deduped}
       SELECT
-        il.inventory_item_id,
-        il.location_id,
+        dl.inventory_item_id,
+        dl.location_id,
         l.name AS location_name,
-        il.available,
+        dl.available,
         ii.sku,
         ii.cost,
         ii.tracked,
         v.id AS variant_id,
         v.title AS variant_title,
         v.product_id
-      FROM inventory_levels il
-      JOIN inventory_items ii ON ii.id = il.inventory_item_id
+      FROM deduped_levels dl
+      JOIN inventory_items ii ON ii.id = dl.inventory_item_id
       LEFT JOIN variants v ON v.sku = ii.sku AND ii.sku IS NOT NULL
-      LEFT JOIN locations l ON l.id = il.location_id
+      LEFT JOIN locations l ON l.id = dl.location_id
       ${whereClause}
       ORDER BY ii.sku ASC
       LIMIT ? OFFSET ?
@@ -71,9 +83,10 @@ export const inventoryLevels: ToolDef = {
     const rows = db.prepare(sql).all(...filterBindings, params.limit, params.offset) as Record<string, unknown>[];
 
     const countSql = `
+      ${deduped}
       SELECT COUNT(*) AS cnt
-      FROM inventory_levels il
-      JOIN inventory_items ii ON ii.id = il.inventory_item_id
+      FROM deduped_levels dl
+      JOIN inventory_items ii ON ii.id = dl.inventory_item_id
       LEFT JOIN variants v ON v.sku = ii.sku AND ii.sku IS NOT NULL
       ${whereClause}
     `;

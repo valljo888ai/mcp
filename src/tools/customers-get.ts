@@ -26,6 +26,19 @@ export const customersGet: ToolDef = {
       .prepare("SELECT * FROM customers WHERE id = ?")
       .get(params.id) as Record<string, unknown> | undefined;
 
+    // Enrich with live counts — synced columns (orders_count, total_spent) are not populated
+    if (customer) {
+      const liveCount = (db
+        .prepare("SELECT COUNT(*) AS cnt FROM orders WHERE customer_id = ?")
+        .get(params.id) as { cnt: number } | undefined)?.cnt ?? 0;
+      customer["orders_count"] = liveCount;
+      const rawSpent = customer["total_spent"];
+      customer["total_spent"] =
+        rawSpent !== null && rawSpent !== undefined
+          ? parseFloat(String(rawSpent)) || 0
+          : 0;
+    }
+
     if (!customer) {
       return {
         content: [

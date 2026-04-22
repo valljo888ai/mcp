@@ -8,7 +8,6 @@ MCP server for SLAM Gadget — expose your Shopify SQLite database to AI tools.
 
 - Node.js 20+
 - A SLAM Gadget `.db` file (schema version 3, downloaded from the Gadget dashboard)
-- `SLAM_DB_PATH` environment variable pointing to the absolute path of the file
 
 ---
 
@@ -28,7 +27,34 @@ npm install -g node-gyp@latest
 npm install -g @slam-commerce/mcp@2
 ```
 
-### Step 2 — Configure your MCP client
+### Step 2 — Point to your database
+
+The server resolves the database path using the first of these that matches:
+
+| Priority | Mechanism | Best for |
+|----------|-----------|----------|
+| 1 | `--db <path>` CLI argument | Project-level `.mcp.json` with relative paths |
+| 2 | `SLAM_DB_PATH` environment variable | Shared/global client configs |
+| 3 | Auto-discover `./slam/data/*.db` | Drop-in zero-config if your project follows the standard layout |
+
+### Step 3 — Configure your MCP client
+
+**Claude Code — project `.mcp.json` (recommended, portable)**
+
+Place a `.mcp.json` in your project root. The `--db` path resolves relative to that directory:
+
+```json
+{
+  "mcpServers": {
+    "slam": {
+      "command": "slam-mcp",
+      "args": ["--db", "./slam/data/your-store.db"]
+    }
+  }
+}
+```
+
+Move or rename the project folder and it still works. If your project follows the standard SLAM Gadget layout (`./slam/data/*.db`), you can omit `--db` entirely and let auto-discovery find the file.
 
 **Claude Desktop** — add to config:
 
@@ -37,9 +63,7 @@ npm install -g @slam-commerce/mcp@2
   "mcpServers": {
     "slam": {
       "command": "slam-mcp",
-      "env": {
-        "SLAM_DB_PATH": "/absolute/path/to/store.db"
-      }
+      "args": ["--db", "/absolute/path/to/store.db"]
     }
   }
 }
@@ -49,7 +73,20 @@ Config file locations:
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-**Claude Code / Cursor** — run once:
+**Cursor** — add to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "slam": {
+      "command": "slam-mcp",
+      "args": ["--db", "/absolute/path/to/store.db"]
+    }
+  }
+}
+```
+
+**Claude Code / Cursor (env var alternative)** — run once:
 
 ```bash
 claude mcp add slam --scope user \

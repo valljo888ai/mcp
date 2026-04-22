@@ -61,13 +61,24 @@ export const ordersGet: ToolDef = {
       .prepare("SELECT code, amount, type FROM order_discount_codes WHERE order_id = ?")
       .all(params.id) as Record<string, unknown>[];
 
-    // Customer lookup via email
+    // Customer lookup via email; enrich with live orders_count (synced column is not populated)
     let customer: Record<string, unknown> | null = null;
     const orderEmail = order["email"] as string | undefined;
     if (orderEmail) {
       customer = (db
         .prepare("SELECT * FROM customers WHERE email = ?")
         .get(orderEmail) as Record<string, unknown> | undefined) ?? null;
+      if (customer) {
+        const liveCount = (db
+          .prepare("SELECT COUNT(*) AS cnt FROM orders WHERE customer_id = ?")
+          .get(customer["id"]) as { cnt: number } | undefined)?.cnt ?? 0;
+        customer["orders_count"] = liveCount;
+        const rawSpent = customer["total_spent"];
+        customer["total_spent"] =
+          rawSpent !== null && rawSpent !== undefined
+            ? parseFloat(String(rawSpent)) || 0
+            : 0;
+      }
     }
 
     const result = {

@@ -5,7 +5,8 @@
  */
 
 import Database from "better-sqlite3";
-import { statSync } from "node:fs";
+import { statSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { createViews } from "./views.js";
 
 // ---------------------------------------------------------------------------
@@ -33,7 +34,23 @@ let _reloadInProgress = false;
 // ---------------------------------------------------------------------------
 
 function resolveDbPath(): string {
-  return process.env["SLAM_DB_PATH"] ?? "./store.db";
+  // Priority 1: explicit env var (set by --db arg in cli.ts or caller's env config)
+  if (process.env["SLAM_DB_PATH"]) return process.env["SLAM_DB_PATH"];
+
+  // Priority 2: auto-discover first *.db file in ./slam/data/
+  try {
+    const files = readdirSync("./slam/data").filter((f) => f.endsWith(".db"));
+    if (files.length > 0) {
+      const discovered = join("./slam/data", files[0]);
+      process.stderr.write(`[slam-mcp] Auto-discovered DB: ${discovered}\n`);
+      return discovered;
+    }
+  } catch {
+    // ./slam/data doesn't exist — fall through
+  }
+
+  // Priority 3: legacy default
+  return "./store.db";
 }
 
 function getMtime(filePath: string): number {
@@ -42,7 +59,11 @@ function getMtime(filePath: string): number {
   } catch (err: unknown) {
     const code = (err as NodeJS.ErrnoException).code;
     if (code === "ENOENT") {
-      throw new Error(`SLAM DB file not found at path: ${filePath}`);
+      const envSet = Boolean(process.env["SLAM_DB_PATH"]);
+      const hint = envSet
+        ? `SLAM_DB_PATH is set to "${filePath}" but the file does not exist. Check the path in your MCP server env config.`
+        : `No DB found at "${filePath}". Options: (1) --db ./slam/data/your-store.db, (2) set SLAM_DB_PATH env var, (3) place a .db file in ./slam/data/ for auto-discovery.`;
+      throw new Error(hint);
     }
     throw err;
   }

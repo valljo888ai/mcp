@@ -20,18 +20,22 @@ export const inventorySummary: ToolDef = {
       .prepare("SELECT COUNT(*) AS cnt FROM inventory_items")
       .get() as { cnt: number } | undefined;
 
-    // Total available units across all locations
+    // Total available units via variant_stock_health (uses MAX(inventory_quantity) fallback
+    // when inventory_levels.available is NULL — Shopify API 2024-10+ deprecated that field)
     const totalUnits = db
-      .prepare("SELECT COALESCE(SUM(available), 0) AS total FROM inventory_levels")
+      .prepare("SELECT COALESCE(SUM(total_available), 0) AS total FROM variant_stock_health")
       .get() as { total: number } | undefined;
 
-    // Units by location
+    // Units by location — inventory_levels.available is NULL (deprecated Shopify API 2024-10+);
+    // show item_count per location which is accurate
     const unitsByLocation = db
       .prepare(
-        `SELECT location_id, COALESCE(SUM(available), 0) AS total_available
-         FROM inventory_levels
-         GROUP BY location_id
-         ORDER BY total_available DESC`,
+        `SELECT il.location_id, l.name AS location_name,
+           COUNT(DISTINCT il.inventory_item_id) AS item_count
+         FROM inventory_levels il
+         LEFT JOIN locations l ON l.id = il.location_id
+         GROUP BY il.location_id
+         ORDER BY item_count DESC`,
       )
       .all() as Record<string, unknown>[];
 

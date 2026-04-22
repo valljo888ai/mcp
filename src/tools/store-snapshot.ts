@@ -26,8 +26,8 @@ export const storeSnapshot: ToolDef = {
         `SELECT
           COUNT(*) AS total_orders,
           COALESCE(SUM(CAST(total_price AS REAL)), 0) AS total_revenue,
-          COUNT(CASE WHEN financial_status = 'PAID' THEN 1 END) AS paid_orders,
-          COUNT(CASE WHEN financial_status = 'PENDING' THEN 1 END) AS pending_orders
+          COUNT(CASE WHEN financial_status = 'paid' THEN 1 END) AS paid_orders,
+          COUNT(CASE WHEN financial_status = 'pending' THEN 1 END) AS pending_orders
         FROM orders`,
       )
       .get() as {

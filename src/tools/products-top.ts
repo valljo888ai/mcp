@@ -77,12 +77,17 @@ export const productsTop: ToolDef = {
     const orderExpr =
       sortCol === "total_revenue"
         ? `COALESCE(CAST(ps.total_revenue AS REAL), 0) ${sortDir}`
+        : sortCol === "units_sold"
+        ? `COALESCE(ps.units_sold, 0) ${sortDir}`
+        : sortCol === "order_count"
+        ? `COALESCE(ps.order_count, 0) ${sortDir}`
         : `ps.${sortCol} ${sortDir}`;
 
     const sql = `
       SELECT
         ps.product_id, ps.product_title, ps.vendor, ps.product_type,
-        ps.order_count, ps.units_sold,
+        COALESCE(ps.order_count, 0) AS order_count,
+        COALESCE(ps.units_sold, 0) AS units_sold,
         COALESCE(CAST(ps.total_revenue AS REAL), 0) AS total_revenue,
         COUNT(DISTINCT v.id) AS variant_count
       FROM product_sales ps

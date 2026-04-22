@@ -28,20 +28,20 @@ const CHECKS: CheckDef[] = [
   },
   {
     name: "zero_orders",
-    description: "Customers with an order count of zero or null",
+    description: "Customers with no orders in the orders table",
     countSql:
-      "SELECT COUNT(*) AS cnt FROM customers WHERE orders_count = 0 OR orders_count IS NULL",
+      "SELECT COUNT(*) AS cnt FROM customers c WHERE (SELECT COUNT(*) FROM orders WHERE customer_id = c.id) = 0",
     sampleSql:
-      "SELECT id, email, first_name, last_name, created_at FROM customers WHERE orders_count = 0 OR orders_count IS NULL LIMIT ?",
+      "SELECT id, email, first_name, last_name, created_at FROM customers c WHERE (SELECT COUNT(*) FROM orders WHERE customer_id = c.id) = 0 LIMIT ?",
   },
   {
     name: "zero_total_spent",
     description:
       "Customers with at least one order but zero total spent — possible sync or attribution issue",
     countSql:
-      "SELECT COUNT(*) AS cnt FROM customers WHERE CAST(total_spent AS REAL) = 0 AND orders_count > 0",
+      "SELECT COUNT(*) AS cnt FROM customers c WHERE CAST(total_spent AS REAL) = 0 AND (SELECT COUNT(*) FROM orders WHERE customer_id = c.id) > 0",
     sampleSql:
-      "SELECT id, email, first_name, last_name, orders_count, total_spent FROM customers WHERE CAST(total_spent AS REAL) = 0 AND orders_count > 0 LIMIT ?",
+      "SELECT id, email, first_name, last_name, total_spent FROM customers c WHERE CAST(total_spent AS REAL) = 0 AND (SELECT COUNT(*) FROM orders WHERE customer_id = c.id) > 0 LIMIT ?",
   },
 ];
 

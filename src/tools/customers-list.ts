@@ -43,20 +43,41 @@ export const customersList: ToolDef = {
 
     const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
 
+    // orders_count and total_spent are not populated by the bulk sync — compute live
+    const cte = `
+      WITH customer_orders AS (
+        SELECT customer_id, COUNT(*) AS order_count
+        FROM orders
+        WHERE customer_id IS NOT NULL
+        GROUP BY customer_id
+      )
+    `;
+
+    const sortExpr =
+      sortCol === "orders_count"
+        ? `COALESCE(co.order_count, 0) ${sortDir}`
+        : sortCol === "total_spent"
+        ? `COALESCE(CAST(c.total_spent AS REAL), 0) ${sortDir}`
+        : `c.${sortCol} ${sortDir}`;
+
     const sql = `
+      ${cte}
       SELECT
         c.id, c.email, c.first_name, c.last_name, c.phone,
-        c.orders_count, c.total_spent, c.state, c.currency
+        COALESCE(co.order_count, 0) AS orders_count,
+        COALESCE(CAST(c.total_spent AS REAL), 0) AS total_spent,
+        c.state, c.currency
       FROM customers c
+      LEFT JOIN customer_orders co ON co.customer_id = c.id
       ${whereClause}
-      ORDER BY c.${sortCol} ${sortDir}
+      ORDER BY ${sortExpr}
       LIMIT ? OFFSET ?
     `;
 
     const rows = db.prepare(sql).all(...filterBindings, params.limit, params.offset) as Record<string, unknown>[];
 
     const countRow = db
-      .prepare(`SELECT COUNT(*) AS cnt FROM customers c ${whereClause}`)
+      .prepare(`${cte} SELECT COUNT(*) AS cnt FROM customers c LEFT JOIN customer_orders co ON co.customer_id = c.id ${whereClause}`)
       .get(...filterBindings) as { cnt: number } | undefined;
     const total = countRow?.cnt ?? 0;
 
