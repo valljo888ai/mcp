@@ -42,6 +42,7 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "fixture": "node e2e/fixture/create-fixture.mjs"
