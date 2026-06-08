@@ -1,7 +1,7 @@
 # SLAM Gadget MCP — Schema Reference
 
 Schema Version: 3 (Gadget Shopify API 2026-04)
-Tables: 56
+Tables: 52
 TEMP Views: 6
 
 ---
@@ -13,7 +13,6 @@ TEMP Views: 6
 - **products** (id, title, body_html, handle, product_type, vendor, status, tags, category, published_at, created_at, updated_at)
 - **variants** (id, product_id, title, sku, barcode, price, compare_at_price, inventory_quantity, inventory_policy, option1, option2, option3, position, taxable, available_for_sale, created_at, updated_at)
 - **product_options** (id, product_id, name, position, option_values)
-- **product_option_values** (id, product_option_id, name, position)
 - **product_media** (id, product_id, media_content_type, alt, status, position, created_at, updated_at)
 - **product_tags** (product_id, tag) — PK: (product_id, tag)
 - **collection_tags** (collection_id, tag) — PK: (collection_id, tag)
@@ -81,8 +80,8 @@ TEMP Views: 6
 
 ### Markets
 
-- **markets** (id, name, handle, enabled, primary, created_at, updated_at) [if present]
-- **shop** (id, name, email, domain, plan_name, currency, timezone, created_at, updated_at) [if present]
+- **markets** (id, name, handle, enabled, primary_market, created_at, updated_at) [if present]
+- **shop** (id, name, domain, myshopify_domain, email, phone, address1, address2, city, province, province_code, country, country_code, zip, currency, iana_timezone, plan_name, plan_display_name, created_at, updated_at) [if present]
 
 ### Metafields
 
@@ -90,8 +89,8 @@ TEMP Views: 6
 
 ### SLAM Meta
 
-- **_slam_meta** (key, value) — contains: `schema_version='3'`, `shop_domain`, `currency`, `timezone`, etc.
-- **_slam_tables** (name, schema_version, row_count, synced_at, sync_category) — table introspection
+- **_slam_meta** (schema_version, slam_version, export_timestamp, export_duration_ms, store_name, store_domain, store_myshopify_domain, store_currency, store_timezone, store_plan, store_country, total_tables, total_records, includes_metafields, shopify_api_version) — one named-column export metadata row
+- **_slam_tables** (table_name, description, source, shopify_model, category, record_count, primary_key, is_derived, is_join_table) — table introspection
 - **sync_metadata** (key, value) — `key='lastSyncedAt'` stores the last sync timestamp
 
 ---
@@ -170,7 +169,7 @@ These V3 tables do not exist in the Gadget schema:
 | `company_contacts.customer_id` | | `customers.id` | B2B contact link |
 | `selling_plans.selling_plan_group_id` | | `selling_plan_groups.id` | |
 | `selling_plan_group_products.product_id` | | `products.id` | |
-| `metafields.owner_id` | `metafields.owner_type` | any entity | owner_type is e.g. 'Product', 'Variant' |
+| `metafields.owner_id` | `metafields.owner_type` | any entity | owner_type is lower-case, e.g. `product`, `variant`, `customer`, `order`, `collection`, `shop` |
 
 ---
 

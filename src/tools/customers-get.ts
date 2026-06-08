@@ -78,7 +78,7 @@ export const customersGet: ToolDef = {
     }
 
     const metafields = db
-      .prepare("SELECT * FROM metafields WHERE owner_id = ? AND owner_type = 'CUSTOMER'")
+      .prepare("SELECT * FROM metafields WHERE owner_id = ? AND LOWER(owner_type) = 'customer'")
       .all(params.id) as Record<string, unknown>[];
 
     const result = {

@@ -9,6 +9,7 @@ describe("slam_health", () => {
   it("returns schema_version 3 and tool_count >= 60", async () => {
     const data = parseResult(await h.client.callTool({ name: "slam_health", arguments: {} }));
     expect(data["schema_version"]).toBe("3");
+    expect(data["server_version"]).toBe("2.0.9");
     expect(data["tool_count"] as number).toBeGreaterThanOrEqual(60);
   });
 });

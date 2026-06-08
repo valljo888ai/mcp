@@ -64,7 +64,7 @@ export const productsGet: ToolDef = {
       .all(params.id) as Record<string, unknown>[];
 
     const metafields = db
-      .prepare("SELECT * FROM metafields WHERE owner_id = ? AND owner_type = 'PRODUCT'")
+      .prepare("SELECT * FROM metafields WHERE owner_id = ? AND LOWER(owner_type) = 'product'")
       .all(params.id) as Record<string, unknown>[];
 
     const result = {
